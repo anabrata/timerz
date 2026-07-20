@@ -4,65 +4,87 @@
   <img src="https://i.postimg.cc/5H51zgdT/logo.png" alt="App Logo" width="120px">
 </p>
 
-Ordinary timer apps productivity ko ek flat text countdown ki tarah treat karte hain jo focus badhane ke bajaye anxiety create karta hai. **Timerz** ek premium focus ecosystem hai jo aapke work aur study blocks ko ek calm, high-productivity ritual me badal deta hai.[cite: 1]
+Ordinary timer apps treat productivity like a sterile spreadsheet—offering a flat text countdown that often creates more anxiety than focus[cite: 1]. ⚡ **Timerz** is a premium workspace ecosystem designed to transform your work and study blocks into a calm, high-productivity ritual[cite: 1]. 
 
-Yeh pure native JavaScript par built hai. Isme smooth glassmorphic interfaces, real-time physics simulation, aur fully customizable settings di gayi hain jo aapko ek deep cognitive flow state me pahunchane me madad karti hain.[cite: 1]
+Built entirely with high-performance native JavaScript, Timerz integrates smooth glassmorphic interfaces, real-time physics simulation, and fully customizable settings to help you achieve and sustain a deep cognitive flow state[cite: 1].
 
 ---
 
 ## 🎯 What Timerz Delivers vs Standard Timers
 
-| Features & Facilities | Standard Timer Apps | Timerz Ecosystem |
+| 🚀 Features & Facilities | ⏳ Standard Timer Apps | 💎 Timerz Ecosystem |
 | :--- | :--- | :--- |
-| **Visual Progress** | Boring aur rigid digital numbers. | **Realistic Liquid Wax Candle** jo aapke live countdown ke saath perfectly sync hoker melt hoti hai.[cite: 1] |
-| **Interface Design** | Flat colors aur generic input boxes. | Premium **Glassmorphic Flip Clock** panels jiske accent colors aap khud control kar sakte hain.[cite: 1] |
-| **Workspace Control** | Rigid interface jise change nahi kiya ja sakta. | Dynamic structural layouts jaise **Center Clock**, **Focus Mode**, ya **Only Candle View**.[cite: 1] |
-| **Media Environment** | External apps ya background tabs ki zaroorat hoti hai. | Local-first, completely integrated **Seekable Audio Playlist Framework**.[cite: 1] |
-| **Custom Typography** | System fonts use karne par majboor karte hain. | **ArrayBuffer Font Uploader Engine** jo aapke uploaded font ko automatically center kar deta hai.[cite: 1] |
+| **🕯️ Visual Progress** | Boring and rigid digital numbers[cite: 1]. | **Realistic Liquid Wax Candle** that melts down in perfect synchronization with your live countdown[cite: 1]. |
+| **🎨 Interface Design** | Flat colors and generic input boxes[cite: 1]. | Premium **Glassmorphic Flip Clock** panels with customizable accent colors[cite: 1]. |
+| **⚙️ Workspace Control** | Rigid interface that cannot be altered[cite: 1]. | Dynamic structural layouts like **Center Clock**, **Focus Mode**, or **Only Candle View**[cite: 1]. |
+| **🎵 Media Environment** | Requires external applications or background browser tabs[cite: 1]. | Local-first, completely integrated **Seekable Audio Playlist Framework**[cite: 1]. |
+| **✍️ Custom Typography** | Forces the use of default system fonts[cite: 1]. | **ArrayBuffer Font Uploader Engine** that automatically centers your uploaded typography[cite: 1]. |
 
 ---
 
 ## 📸 Interface Showcase
 
-<table align="center">
-  <tr>
-    <td width="33.3%"><b>Main Workspace</b><br><img src="https://i.postimg.cc/8sfGBTSm/screen1.png" alt="Main Workspace"></td>
-    <td width="33.3%"><b>Control Drawer</b><br><img src="https://i.postimg.cc/zb99PRrV/screen2.png" alt="Control Drawer"></td>
-    <td width="33.3%"><b>Focus Mode</b><br><img src="https://i.postimg.cc/qz8dSQgh/screen3.png" alt="Focus Mode"></td>
-  </tr>
-  <tr>
-    <td width="33.3%"><b>Theme Engine</b><br><img src="https://i.postimg.cc/9RvvNqhM/screen4.png" alt="Theme Engine"></td>
-    <td width="66.6%" colspan="2"><b>Mobile Breakpoint</b><br><img src="https://i.postimg.cc/v4hwHBW0/screen5.png" alt="Mobile View Layout"></td>
-  </tr>
-</table>
+<p align="center">
+  <b>🖥️ Main Productivity Workspace</b><br>
+  <img src="https://i.postimg.cc/8sfGBTSm/image.png" alt="Main Workspace">
+</p>
+
+<br>
+
+<p align="center">
+  <b>🎛️ Tactile Control Drawer</b><br>
+  <img src="https://i.postimg.cc/zb99PRrV/image.png" alt="Control Drawer">
+</p>
+
+<br>
+
+<p align="center">
+  <b>✨ Many Customization</b><br>
+  <img src="https://i.postimg.cc/qz8dSQgh/image.png" alt="Many Customization">
+</p>
+
+<br>
+
+<p align="center">
+  <b>🎨 Dynamic Customization Engine</b><br>
+  <img src="https://i.postimg.cc/9RvvNqhM/image.png" alt="Theme Engine">
+</p>
+
+<br>
+
+<p align="center">
+  <b>📱 Adaptive Mobile Breakpoint</b><br>
+  <img src="https://i.postimg.cc/v4hwHBW0/image.png" alt="Mobile View Layout">
+</p>
 
 ---
 
-## ⚡ Core Facilities in Detail
+## ⚡ Many Customization Facilities
 
-### Immersive Candle Physics
-Timer chalte hi digital candle active ho jati hai. Jaise-jaise time kam hota hai, candle ka wax progressive mathematical calculations ke mutabik niche melt hota jata hai. Countdown khatam hote hi flame smoothly extinguish ho jati hai aur ek celebratory completion card trigger hota hai.[cite: 1]
+### 🕯️ Immersive Candle Physics
+As soon as the timer initializes, the digital candle becomes active[cite: 1]. As time elapses, the candle wax melts downward based on progressive mathematical calculations[cite: 1]. When the countdown ends, the flame smoothly extinguishes and triggers a celebratory completion card accompanied by a dynamic balloon animation environment[cite: 1].
 
-### Advanced Typography Injection
-Agar aapko default fonts pasand nahi hain, toh aap direct koi bhi `.ttf`, `.otf`, ya `.woff` font file upload kar sakte hain. System ka background script automatically HTML5 Canvas metrics calculate karke text ko perfectly align aur center kar deta hai.[cite: 1]
+### ✍️ Advanced Typography Injection
+If you want to personalize your workspace beyond system text configurations, you can directly upload any `.ttf`, `.otf`, or `.woff` font file[cite: 1]. The integrated layout engine automatically calculates HTML5 Canvas metrics to adjust padding properties, keeping the numbers perfectly aligned and centered inside the clock panels[cite: 1].
 
-### Local-First Audio Architecture
-Bina kisi external server dependency ke aap apne device se multiple audio files directly browser me load kar sakte hain. Yeh system ek customized timeline progress bar offer karta hai jise aap real time me seek aur control kar sakte hain.[cite: 1]
+### 🎵 Local-First Audio Architecture
+Enjoy complete audio privacy with no external server overhead[cite: 1]. Load multiple audio files or lofi background tracks directly from your local device storage into the browser[cite: 1]. The system generates an interactive, seekable audio player timeline to easily jump to any timestamp or control playback on the fly[cite: 1].
 
-### Complete Layout Flexibility
-*   **Focus Mode:** Fullscreen mode active karte hi saare control panels hide ho jaate hain aur screen par sirf clean glassmorphic clock display hoti hai.[cite: 1]
-*   **Only Candle Mode:** Clock ko poori tarah screen se remove karke sirf ek melting candle ko samne rakhta hai jo meditation ya deep reading sessions ke liye perfect hai.[cite: 1]
-*   **Integrated To-Do Panel:** Bina layout disturb kiye aap pane ke andar hi enter key daba kar dynamically new tasks append ya complete kar sakte hain.[cite: 1]
+### ⚙️ Complete Layout Flexibility
+*   🎚️ **Focus Mode:** Activating the fullscreen configuration hides the branding and control panels completely, keeping only the prominent glassmorphic clock display visible on screen[cite: 1].
+*   🕯️ **Only Candle Mode:** Completely removes the digital numbers from the screen layout, leaving only the realistic melting candle as a peaceful focal point for meditation or reading sessions[cite: 1].
+*   📝 **Integrated To-Do Panel:** Track your immediate workflow targets adjacent to the clock[cite: 1]. Pressing the Enter key appends new tasks dynamically, and checking them off triggers a clean fade out animation[cite: 1].
+*   🌈 **Theme Personalization:** Modify background gradients, target direct solid colors, adjust gradient dial angles, and select individual colors for the clock panels, colons, and text fields[cite: 1].
 
 ---
 
 ## 🛠️ Technical Implementation
 
-*   **Frontend Core:** Vanilla HTML5, Advanced CSS3 Custom Variables, ES6+ JavaScript.[cite: 1]
-*   **Performance Optimization:** Smooth 60fps card flip animations ke liye `will-change` aur GPU layer promotion ka use kiya gaya hai.[cite: 1]
-*   **State Management:** Component rendering poori tarah application state aur performance timeline counter par operational hai.[cite: 1]
+*   🌐 **Frontend Core:** Vanilla HTML5, Advanced CSS3 Custom Variables, ES6+ JavaScript[cite: 1].
+*   🚀 **Performance Optimization:** Leverages hardware-accelerated `will-change` properties and GPU layer promotion to guarantee smooth 60fps card flip animations without layout shifts[cite: 1].
+*   📊 **State Management:** Fully client-side architecture driven entirely by user interaction events and a high-performance rendering routine[cite: 1].
 
 ---
 
 ## 👤 Author
-Made with care by [Anabrata](https://github.com/anabrata).[cite: 1]
+Made with care by [Anabrata](https://github.com/anabrata)[cite: 1].
