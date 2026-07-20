@@ -1,11 +1,10 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Candle Timer V2.0</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<title>Candle Timer</title>
+<link rel="icon" type="image/png" href="logo.png" />
 <style>
   :root{
     /* Sizes */
@@ -28,30 +27,57 @@
     --colon-color: #ffffff;
     --clock-glass-bg: rgba(255,255,255,0.06);
     --clock-glass-border: rgba(255,255,255,0.18);
-    /* Simple (non‑flip) clock color */
+    /* Simple (non-flip) clock color */
     --simple-color: #ffffff;
     /* Candle */
     --wax: #f2e4c7;
     --wick: #1b1b1b;
     /* Layout tweak */
     --candle-offset: 18px;
-    /* To‑do base bg (transparent by default) */
+    /* To-do base bg (transparent by default) */
     --todo-bg: transparent;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%}
+  *{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+  }
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+  html,body{
+    min-height:100vh;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow-x: hidden;
+  }
   body{
     margin:0; display:flex; flex-direction:column; color:#111;
+    min-height:100vh;
     font-family:"Comic Sans MS", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
     background-image: linear-gradient(var(--bg-angle), var(--bg-c1), var(--bg-c2), var(--bg-c3));
     background-attachment: fixed; background-size: cover; background-position: center;
   }
+  
+  body, button, label, .digit, .brand, .colon, #timer-container, #candle-area {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+  input, .todoText {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+  }
+
   .brand{
     position:fixed; left:12px; top:10px; z-index:40; color:#fff;
     font-weight:800; font-size:13px; letter-spacing:.3px;
     text-shadow:0 1px 2px rgba(0,0,0,.35); user-select:none;
   }
-  /* ===== Main layout: Clock | To‑do | Candle ===== */
+  /* ===== Main layout: Clock | To-do | Candle ===== */
   .main{
     flex:1;
     display:grid;
@@ -67,7 +93,7 @@
   #timer-container{ grid-column:1; }
   #todo-panel     { grid-column:2; justify-self:center; align-self:center; }
   #candle-area    { grid-column:3; }
-  /* Center Clock: timer centered; To‑do stays LEFT (grid) */
+  /* Center Clock: timer centered; To-do stays LEFT (grid) */
   .center-clock .main{ grid-template-columns: max-content 1fr max-content; }
   .center-clock #timer-container{
     position:absolute; left:50%; top:50%;
@@ -77,19 +103,19 @@
     position:static; grid-column:1; justify-self:start; align-self:center;
     margin-left:min(48px,5vw); z-index:6;
   }
-  /* Hide candle → To‑do occupies RIGHT */
+  /* Hide candle -> To-do occupies RIGHT */
   .candle-off #candle-area{ display:none !important; }
   .candle-off .main{ grid-template-columns: max-content max-content; }
   .candle-off #todo-panel{
     position:static !important; left:auto !important; top:auto !important; transform:none !important; justify-self:end !important;
   }
-  /* Center‑clock + candle‑off → keep To‑do LEFT */
+  /* Center-clock + candle-off -> keep To-do LEFT */
   .center-clock.candle-off .main{ grid-template-columns: max-content 1fr; }
   .center-clock.candle-off #todo-panel{
     position:static !important; grid-column:1 !important; justify-self:start !important;
     margin-left:min(48px,5vw) !important; z-index:6 !important;
   }
-  /* Only candle → center candle, hide clock; To‑do LEFT */
+  /* Only candle -> center candle, hide clock; To-do LEFT */
   .only-candle #timer-container{ display:none !important; }
   .only-candle .main{ grid-template-columns: max-content 1fr; }
   .only-candle #todo-panel{
@@ -97,10 +123,10 @@
     z-index:6;
   }
   .only-candle #candle-area{ grid-column: 2; justify-self: center; }
-  /* To‑do visibility via .todo-on */
+  /* To-do visibility via .todo-on */
   #todo-panel{ display:none; }
   .todo-on #todo-panel{ display:block; }
-  /* To‑do styling */
+  /* To-do styling */
   #todo-panel{
     max-width: clamp(220px, 26vw, 420px);
     max-height: 60vh;
@@ -132,97 +158,627 @@
   /* ===== Flip clock (glassy) ===== */
   #timer{ display:flex; align-items:center; gap:12px; user-select:none; }
   .digit{
-    position:relative; width:var(--digit-w); height:var(--digit-h); perspective:1200px; border-radius:var(--digit-radius); overflow:hidden;
+    position:relative; width:var(--digit-w); height:var(--digit-h); border-radius:var(--digit-radius); overflow:hidden;
     background: linear-gradient(145deg,var(--clock-c1),var(--clock-c2),var(--clock-c3));
     background-blend-mode: screen;
     border: 1px solid var(--clock-glass-border);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     box-shadow: inset 0 -1px 0 rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.18), 0 10px 28px rgba(0,0,0,.22);
     flex:0 0 auto;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    transform: translateZ(0);
   }
   .digit:before{ content:""; position:absolute; inset:0; background: var(--clock-glass-bg); pointer-events:none; }
-  .digit .top,.digit .bottom{ position:absolute; left:0; right:0; height:50%; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+  .digit .top,.digit .bottom{ position:absolute; left:0; right:0; height:50%; overflow:hidden; }
   .digit .top{ top:0; border-bottom:1px solid var(--split-line); }
   .digit .bottom{ bottom:0; border-top:1px solid var(--split-line); }
-  .value{ position:absolute; left:0; right:0; height:var(--digit-h); display:flex; align-items:center; justify-content:center; font-weight:900; color:var(--clock-text); font-size: calc(var(--digit-h)*.70); line-height:var(--digit-h); text-shadow: 0 2px 8px rgba(0,0,0,.22); }
+  .value{ position:absolute; left:0; right:0; height:var(--digit-h); display:flex; align-items:center; justify-content:center; box-sizing:border-box; padding-top:var(--font-pad-top, 0px); padding-bottom:var(--font-pad-bottom, 0px); font-weight:900; color:var(--clock-text); font-size: calc(var(--digit-h)*.70); line-height:var(--digit-h); text-shadow: 0 2px 8px rgba(0,0,0,.22); }
+  .value, #simpleTimer, #realTimeDigits {
+    font-family: var(--clock-font-family, "Comic Sans MS"), system-ui, -apple-system, sans-serif !important;
+  }
   .top .value,.top-flip .value{ clip-path: inset(0 0 50% 0); transform: translateY(0); }
   .bottom .value,.bottom-flip .value{ clip-path: inset(50% 0 0 0); transform: translateY(-50%); }
-  .top-flip,.bottom-flip{ position:absolute; left:0; right:0; height:50%; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:inherit; }
+  .top-flip,.bottom-flip{ position:absolute; left:0; right:0; height:50%; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; background: transparent !important; }
   .top-flip{ top:0; transform-origin:bottom; border-bottom:1px solid var(--split-line); animation: topFlip .26s ease-in forwards; }
   .bottom-flip{ bottom:0; transform-origin:top; border-top:1px solid var(--split-line); animation: bottomFlip .26s ease-out forwards; }
-  @keyframes topFlip{ 0%{transform:rotateX(0)} 100%{transform:rotateX(-90deg)} }
-  @keyframes bottomFlip{ 0%{transform:rotateX(90deg)} 100%{transform:rotateX(0)} }
+  @keyframes topFlip{ 0%{transform:scaleY(1)} 100%{transform:scaleY(0)} }
+  @keyframes bottomFlip{ 0%{transform:scaleY(0)} 100%{transform:scaleY(1)} }
   .colon{ display:flex; align-items:center; justify-content:center; width:calc(var(--digit-w)*.33); height:var(--digit-h); font-size:calc(var(--digit-h)*.6); font-weight:900; color:var(--colon-color); text-shadow:0 2px 6px rgba(0,0,0,.3); flex:0 0 auto; }
-  /* Transparent mode for flip cards (kept but not exposed in UI) */
-  .clock-transparent .digit{
-    background: transparent !important;
-    border-color: rgba(255,255,255,.28) !important;
-    box-shadow: 0 10px 28px rgba(0,0,0,.22) !important;
-    backdrop-filter: none !important;
+  
+  /* Glassy Transparent Mode for Flip Clock */
+  .clock-transparent .digit {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(18px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.20),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.15) !important;
   }
-  .clock-transparent .digit:before{ background: transparent !important; }
-  .clock-transparent .digit .top{ border-bottom:1px solid rgba(255,255,255,.25); }
-  .clock-transparent .digit .bottom{ border-top:1px solid rgba(255,255,255,.25); }
+  .clock-transparent .digit:hover {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 
+      0 16px 48px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.30),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.20) !important;
+    transform: translateY(-2px);
+  }
+  /* Specular highlight removed: z-index overlay causes 3D clipping white flashes during flip animations */
+  .clock-transparent .digit:before {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 60%) !important;
+  }
+  .clock-transparent .digit .top {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+  .clock-transparent .digit .bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+  .clock-transparent .colon {
+    color: var(--colon-color, #ffffff);
+    text-shadow: 0 0 10px var(--colon-color, #ffffff), 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+  .clock-transparent .value {
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  }
+  .clock-transparent .top-flip,
+  .clock-transparent .bottom-flip {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* Hidden values when flipping to avoid overlapping text glitches */
+  .digit.flipping-top .top .value {
+    opacity: 0 !important;
+  }
+  .digit.flipping-bottom .bottom .value {
+    opacity: 0 !important;
+  }
+
   /* ===== Simple clock ===== */
   #simpleTimer{
     display:none; font-weight:900; letter-spacing:.04em; font-size:min(12vw,160px);
     color:var(--simple-color); text-shadow:0 0 10px rgba(0,0,0,.25), 0 12px 32px rgba(0,0,0,.25);
   }
-  /* ===== Candle ===== */
-  #candle-area{ display:flex; align-items:flex-end; justify-content:flex-end; height:max(380px,42vh); position:relative; transform: translateY(var(--candle-offset)); }
-  .candle-clip{ position:relative; width:180px; height:380px; overflow:hidden; display:flex; align-items:flex-end; justify-content:center; }
-  .candle-wrap{ position:absolute; inset:auto 0 0 0; margin:auto; width:180px; height:380px; display:flex; align-items:flex-end; justify-content:center; transition: transform .5s ease, opacity .5s ease; }
+  
+  /* ===== Realistic Candle & Shadows ===== */
+  #candle-area{ 
+    width: 180px;
+    display:flex; align-items:flex-end; justify-content:center; 
+    height:410px; position:relative; transform: translateY(var(--candle-offset)); 
+  }
+  .candle-wrap{ 
+    position:absolute; inset:auto 0 0 0; margin:auto; width:180px; height:410px; 
+    display:flex; align-items:flex-end; justify-content:center; 
+    transition: transform .5s ease, opacity .5s ease; 
+  }
   .candle-wrap.vanish{ transform: scale(.85) translateY(12px); opacity: 0; pointer-events:none; }
-  .wax{ position:absolute; bottom:0; width:150px; height:100%; z-index:1; border-radius:22px; background: radial-gradient(120px 26px at 75px 6px, rgba(255,255,255,.70), transparent 62%), linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,0) 24%), linear-gradient(180deg,#ffffff33,#00000022 40%,#00000028 100%), linear-gradient(180deg,var(--wax), #e6d9bb); transition: height .22s linear; }
-  .waxTop{ position:absolute; top:-22px; left:50%; transform:translateX(-50%); width:150px; height:44px; pointer-events:none; z-index:3; background: conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.33) 0deg, rgba(255,255,255,.10) 70deg, rgba(0,0,0,.08) 180deg, rgba(255,255,255,.20) 300deg, rgba(255,255,255,.33) 360deg), radial-gradient(65% 55% at 50% 62%, rgba(255,255,255,.52), rgba(255,255,255,.12) 60%, rgba(0,0,0,.10) 100%); }
-  .wax:after{ content:""; position:absolute; top:30px; left:24px; width:12px; height:64px; border-radius:10px; background: linear-gradient(180deg,#fff6,#0000 60%), var(--wax); box-shadow: 44px 8px 0 -3px var(--wax), 44px 8px 0 -3px #fff6, 92px 12px 0 -6px var(--wax), 92px 12px 0 -6px #fff6; opacity:.85; }
-  .wick{ position:absolute; width:6px; height:30px; background:linear-gradient(180deg,#444,var(--wick)); border-radius:4px; top:-12px; left:50%; transform:translateX(-50%); z-index:4; }
-  /* Flame anchored to wick center */
+  
+  .candle-shadow {
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 170px;
+    height: 14px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 75%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  .wax{ 
+    position:absolute; bottom:0; left:15px; width:150px; height:100%; z-index:1; 
+    border-radius:22px 22px 0 0; 
+    background: 
+      linear-gradient(90deg, rgba(0,0,0,0.22) 0%, rgba(255,255,255,0.15) 15%, rgba(255,255,255,0) 40%, rgba(0,0,0,0.08) 85%, rgba(0,0,0,0.35) 100%),
+      linear-gradient(180deg, rgba(255, 180, 100, 0.45) 0%, rgba(0,0,0,0.12) 15%, rgba(0,0,0,0) 60%),
+      var(--wax);
+    box-shadow: 
+      inset 0 15px 25px rgba(255, 180, 100, 0.35),
+      inset 4px 0 8px rgba(255,255,255,0.15),
+      inset -4px 0 8px rgba(0,0,0,0.3);
+    transition: height .22s linear; 
+  }
+  
+  .waxTop{ 
+    position:absolute; top:-10px; left:50%; transform:translateX(-50%); width:150px; height:20px; 
+    pointer-events:none; z-index:3; 
+    border-radius: 50%; 
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(255, 215, 130, 0.9) 0%, rgba(255, 180, 100, 0.6) 25%, rgba(242, 228, 199, 0.4) 75%, rgba(242, 228, 199, 0) 100%);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.5);
+  }
+  
+  /* Molten Wax Drips */
+  .drip {
+    position: absolute;
+    border-radius: 4px 4px 6px 6px / 10% 10% 90% 90%;
+    box-shadow: 
+      inset -1px 0 2px rgba(0,0,0,0.12), 
+      inset 1px 0 2px rgba(255,255,255,0.35),
+      0 2px 3px rgba(0,0,0,0.1);
+    z-index: 2;
+  }
+  .drip-1 {
+    top: 0px;
+    left: 20px;
+    width: 8px;
+    height: 55px;
+    background: linear-gradient(180deg, rgba(242, 228, 199, 0) 0%, var(--wax) 25%, #e1d2b3 100%);
+  }
+  .drip-2 {
+    top: 0px;
+    left: 70px;
+    width: 10px;
+    height: 35px;
+    background: linear-gradient(180deg, rgba(242, 228, 199, 0) 0%, var(--wax) 35%, #e1d2b3 100%);
+  }
+  .drip-3 {
+    top: 0px;
+    right: 30px;
+    width: 7px;
+    height: 75px;
+    background: linear-gradient(180deg, rgba(242, 228, 199, 0) 0%, var(--wax) 20%, #e1d2b3 100%);
+  }
+  
+  .wick {
+    position: absolute;
+    width: 4px;
+    height: 22px;
+    background: linear-gradient(180deg, #111 0%, #ff3300 80%, #000 100%);
+    border-radius: 2px;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    box-shadow: 0 0 4px rgba(255, 50, 0, 0.6);
+  }
+  
+  /* Flame anchored to wick center inside .candle-wrap */
   .flame{
-    position:absolute; width:52px; height:110px; z-index:6; pointer-events:none;
-    left:0; top:0; transform: translate(-50%,-100%) translateY(10px);
+    position:absolute; 
+    left: 50%;
+    /* bottom is set dynamically by JS inside setWaxHeightByProgress() */
+    width:48px; height:90px; z-index:6; pointer-events:none;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 0 15px rgba(255,140,0,0.6));
+    transition: bottom .22s linear;
   }
   .flame-core{
-    position:absolute; inset:0; border-radius:50% 50% 38% 38%;
-    background: radial-gradient(ellipse at 50% 22%, #fff7c0 0%, #ffe08a 38%, #ffb347 58%, #ff7a00 78%, transparent 80%),
-                radial-gradient(ellipse at 50% 45%, #ffffff 0%, transparent 65%);
-    box-shadow:0 0 18px 6px rgba(255,170,40,.55), 0 0 36px 14px rgba(255,140,0,.40), 0 -20px 28px rgba(255,220,170,.40);
-    animation: flickerSoft .6s ease-in-out infinite;
+    position:absolute; inset:0; border-radius:50% 50% 35% 35% / 60% 60% 40% 40%;
+    background: 
+      /* Bright white inner flame */
+      radial-gradient(ellipse at 50% 60%, #ffffff 0%, rgba(255, 255, 255, 0.9) 20%, rgba(255, 240, 150, 0.8) 40%, rgba(255, 140, 0, 0) 70%),
+      /* Blue base glow */
+      radial-gradient(ellipse at 50% 90%, rgba(0, 100, 255, 0.85) 0%, rgba(0, 50, 255, 0.4) 25%, rgba(0, 0, 255, 0) 50%),
+      /* Main orange-red outer body */
+      radial-gradient(ellipse at 50% 40%, #ff6600 0%, #ff3300 70%, rgba(255, 50, 0, 0) 100%);
+    animation: flickerRealistic 0.8s ease-in-out infinite;
+    filter: blur(0.5px);
   }
-  @keyframes flickerSoft{ 0%{ transform:scale(1) rotate(-0.8deg); opacity:.95 } 50%{ transform:scale(1.06) rotate(0.6deg); opacity:.82 } 100%{ transform:scale(1) rotate(-0.8deg); opacity:.95 } }
+  @keyframes flickerRealistic {
+    0%, 100% { transform: scale(1) rotate(-1deg); }
+    20% { transform: scale(1.04, 0.98) rotate(1deg) skewX(1deg); }
+    40% { transform: scale(0.96, 1.04) rotate(-0.5deg) skewX(-1deg); }
+    60% { transform: scale(1.02, 1.02) rotate(1.5deg) skewX(0.5deg); }
+    80% { transform: scale(0.98, 0.96) rotate(-1.5deg) skewX(-0.5deg); }
+  }
   .flame.off .flame-core{ opacity:0 !important; animation-play-state: paused !important; }
   .stub{ display:none; position:absolute; bottom:0; width:150px; height:58px; background:linear-gradient(180deg,#9a9a9a,#6f6f6f); border-radius:0 0 22px 22px; z-index:1; }
-  /* ===== Controls (glass) ===== */
-  #controls{
-    position:relative; display:grid; grid-auto-flow:column; grid-auto-columns:minmax(260px,1fr); gap:14px; padding:16px;
-    background:rgba(0,0,0,.22); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-    overflow-x:auto; border-top-left-radius:16px; border-top-right-radius:16px; z-index:10; min-height:200px;
+  
+  /* ===== Tabbed Menu UI Redesign ===== */
+  #controls {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 360px;
+    height: 100vh;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 1001;
+    display: flex;
+    box-shadow: 25px 0 70px rgba(0, 0, 0, 0.5);
+    transform: translate3d(-100%, 0, 0);
+    transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: system-ui, -apple-system, sans-serif;
   }
-  .card{
-    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px; min-height:164px;
-    display:flex; flex-direction:column; gap:8px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  #controls::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 15, 20, 0.40); /* 40% opacity transparent menu panel */
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    z-index: -1;
+    /* Isolate blur rendering from 3D clock bounds */
+    transform: translateZ(0);
+    pointer-events: none;
   }
-  .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  label{ font-size:12px; color:#fff; opacity:.95 }
-  input[type="number"],input[type="color"],input[type="file"]{
-    width:100%; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.35); color:#fff; outline:none;
+  #controls.open {
+    transform: translate3d(0, 0, 0);
   }
-  input[type="checkbox"]{ transform:scale(1.2) }
-  .btn{ padding:12px 18px; border-radius:12px; border:none; font-weight:800; cursor:pointer; font-family:inherit; background:linear-gradient(135deg,#ffd166,#ff9a00); color:#1b1b1b; box-shadow:0 6px 16px rgba(0,0,0,.18); transition:transform .12s, box-shadow .2s, background .2s; }
-  .btn:hover{ background:linear-gradient(135deg,#ffe08a,#ffb347); box-shadow:0 10px 24px rgba(0,0,0,.28); }
-  .btn:active{ transform: translateY(1px) scale(.99); }
-  .btn.alt{ background:linear-gradient(135deg,#a5b4fc,#6366f1); color:#0d0d15; }
-  .btn.warn{ background:linear-gradient(135deg,#fca5a5,#ef4444); color:#0d0d15; }
-  .btn.small{ padding:8px 10px; border-radius:10px; font-weight:900; }
-  .btn.wide{ min-width:110px; }
+  
+  .menu-tabs {
+    width: 72px;
+    background: rgba(15, 15, 20, 0.25); /* Unified glassy tab sidebar background */
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  
+  .tab-btn {
+    width: 52px;
+    height: 52px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.65); /* Brighter inactive tabs and emojis */
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    gap: 4px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tab-btn span {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: inherit;
+  }
+  .tab-btn:hover {
+    color: #ffd166;
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1.05);
+  }
+  .tab-btn.active {
+    color: #ffd166;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .menu-content {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #fff;
+  }
+  
+  .tab-pane {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tab-pane.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .tab-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 10px;
+    flex-shrink: 0;
+  }
+  .tab-header h3 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #ffd166;
+    text-transform: uppercase;
+  }
+  .menu-close-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+    transition: color 0.2s, transform 0.2s;
+  }
+  .menu-close-btn:hover {
+    color: #ff6b6b;
+    transform: scale(1.1);
+  }
+
+  .pane-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 6px;
+  }
+  .pane-body::-webkit-scrollbar {
+    width: 4px;
+  }
+  .pane-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .pane-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+  }
+
+  .settings-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+  
+  .input-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .input-grid label {
+    font-size: 10px;
+    color: #fff;
+    opacity: 0.8;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .input-grid input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 0;
+    font-size: 13px;
+    outline: none;
+  }
+  .time-spinner {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    overflow: hidden;
+    height: 32px;
+    transition: border-color 0.2s;
+  }
+  .time-spinner:focus-within {
+    border-color: #ffd166;
+  }
+  .time-spinner input {
+    flex: 1;
+    width: 0;
+    min-width: 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    -moz-appearance: textfield;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    color: #fff !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  .time-spinner input::-webkit-outer-spin-button,
+  .time-spinner input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .time-spinner .spin-btn {
+    width: 26px;
+    height: 100%;
+    background: rgba(255,255,255,0.06);
+    border: none;
+    color: #ffd166;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .time-spinner .spin-btn:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+  .time-spinner .spin-btn:active {
+    background: rgba(255,255,255,0.25);
+  }
+  .input-grid input:focus {
+    border-color: #ffd166;
+  }
+
+  /* Button and row styling helpers inside menu */
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  label { font-size:12px; color:#fff; opacity:.95 }
+  input[type="number"], input[type="file"] {
+    width:100%; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,0.35); color:#fff; outline:none;
+  }
+  .btn {
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+    background: linear-gradient(135deg, #ffd166, #ff9a00);
+    color: #111;
+    box-shadow: 0 4px 15px rgba(255, 154, 0, 0.22);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 154, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.25);
+    filter: brightness(1.05);
+  }
+  .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(255, 154, 0, 0.2);
+  }
+  .btn.alt {
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.12));
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .btn.alt:hover {
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.18));
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+  .btn.warn {
+    background: linear-gradient(135deg, #fca5a5, #ef4444);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .btn.warn:hover {
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  .btn.small { padding: 8px 10px; border-radius: 10px; font-weight: 900; }
+  .btn.wide { min-width: 110px; }
+
+  /* Floating Settings Toggle Button */
+  #menuToggle {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1000;
+    background: rgba(15, 15, 20, 0.40) !important; /* Locked at 40% transparent opacity */
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 50px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #menuToggle:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+  }
+  #menuToggle.menu-active {
+    background: rgba(255, 209, 102, 0.25) !important; /* Maintained 40% opacity with active golden border/glow */
+    color: #ffd166;
+    border-color: rgba(255, 209, 102, 0.4) !important;
+    box-shadow: 0 8px 32px rgba(255, 209, 102, 0.15);
+  }
+  
+  /* Hide settings toggles in focus mode */
+  .focus-mode-active #menuToggle {
+    display: none !important;
+  }
+  
+  /* ===== Responsive Styling & Layout Breakpoints ===== */
   @media (max-width:980px){
     :root{ --digit-w:100px; --digit-h:140px; }
     #todo-panel{ max-width:62vw; }
+  }
+  @media (max-width:850px) {
+    .main {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: auto auto auto !important;
+      row-gap: 28px !important;
+      column-gap: 0 !important;
+      justify-items: center !important;
+      align-content: center !important;
+      padding: 60px 16px 24px !important;
+    }
+    #timer-container {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+    }
+    #todo-panel {
+      grid-column: 1 !important;
+      grid-row: 3 !important;
+      max-width: 90vw !important;
+      width: 100% !important;
+      margin-left: 0 !important;
+    }
+    #candle-area {
+      grid-column: 1 !important;
+      grid-row: 2 !important;
+      justify-self: center !important;
+    }
+    .center-clock .main {
+      grid-template-columns: 1fr !important;
+    }
+    .center-clock #timer-container {
+      position: static !important;
+      transform: none !important;
+      margin: 0 auto !important;
+    }
+    .center-clock #todo-panel {
+      margin-left: 0 !important;
+    }
+    .candle-off .main {
+      grid-template-columns: 1fr !important;
+    }
+    .candle-off #todo-panel {
+      justify-self: center !important;
+    }
   }
   @media (max-width:720px){
     :root{ --digit-w:86px; --digit-h:120px; }
     #todo-panel{ max-width:72vw; }
   }
+  @media (max-width:450px){
+    :root{ --digit-w:64px; --digit-h:90px; --digit-radius: 8px; }
+    .colon { font-size: 32px; width: 16px; }
+    #timer { gap: 6px; }
+  }
+  
+  /* Mobile and short screen responsive fixes */
+  @media (max-width: 600px) or (max-height: 750px) {
+    #candle-area {
+      transform: scale(0.7) translateY(calc(var(--candle-offset) / 0.7)) !important;
+      transform-origin: bottom center;
+      margin-top: -120px;
+    }
+  }
+  @media (max-width: 500px) {
+    #timer.show-hours {
+      --digit-w: clamp(32px, 8.5vw, 48px) !important;
+      --digit-h: clamp(45px, 12vw, 68px) !important;
+      gap: 4px !important;
+    }
+    #timer.show-hours .colon {
+      font-size: 20px !important;
+      width: 10px !important;
+    }
+  }
+  
   .no-transitions, .no-transitions *{ transition: none !important; animation: none !important; }
   /* ===== 3-2-1 Count-in Overlay ===== */
   #countOverlay{
@@ -241,24 +797,127 @@
     100%{ transform:scale(1) }
   }
   /* ===== Congrats Overlay with Balloons ===== */
-  #congrats{
-    position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:120;
-    background: radial-gradient(120% 120% at 50% 20%, rgba(0,0,0,.15), rgba(0,0,0,.45));
-    overflow:hidden;
+  #congrats {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 120;
+    background: radial-gradient(120% 120% at 50% 20%, rgba(0,0,0,0), rgba(0,0,0,0));
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    overflow: hidden;
+    transition: background 0.4s ease, backdrop-filter 0.4s ease, -webkit-backdrop-filter 0.4s ease;
   }
-  #cgCard{
-    position:relative; padding:28px 32px; border-radius:18px;
-    background: rgba(255,255,255,.12); color:#fff; text-align:center;
-    border: 1px solid rgba(255,255,255,.25);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 14px 44px rgba(0,0,0,.35);
+  #congrats.active {
+    background: radial-gradient(120% 120% at 50% 20%, rgba(0,0,0,.45), rgba(0,0,0,.75)) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
   }
-  #cgTitle{ margin:0 0 6px 0; font-size: clamp(28px, 6vw, 46px); font-weight:900; letter-spacing:.4px; }
-  #cgMsg{ margin:0 0 14px 0; opacity:.95; font-size: clamp(14px, 2.4vw, 18px) }
-  #cgClose{
-    appearance:none; cursor:pointer; border:none; border-radius:12px;
-    padding:10px 14px; font-weight:900; background:#fff; color:#111;
-    box-shadow:0 6px 16px rgba(0,0,0,.2);
+  #cgCard {
+    position: relative;
+    padding: 36px 42px;
+    border-radius: 24px;
+    background: rgba(18, 18, 24, 0.78);
+    color: #fff;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    box-shadow: 
+      0 30px 70px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 90vw;
+    width: 380px;
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.45s ease;
+  }
+  #congrats.active #cgCard {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  #cgTitle { 
+    margin: 0 0 8px 0; 
+    font-size: 26px; 
+    font-weight: 800; 
+    letter-spacing: -0.02em; 
+  }
+  #cgMsg { 
+    margin: 0 0 24px 0; 
+    opacity: 0.8; 
+    font-size: 15px; 
+    font-weight: 400; 
+  }
+  #cgClose {
+    appearance: none;
+    cursor: pointer;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 32px;
+    font-weight: 700;
+    font-size: 14px;
+    background: linear-gradient(135deg, #ffd166, #ff9a00);
+    color: #111;
+    box-shadow: 0 4px 15px rgba(255, 154, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    width: 100%;
+  }
+  #cgClose:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 154, 0, 0.45);
+    filter: brightness(1.05);
+  }
+  #cgClose:active {
+    transform: translateY(0);
+  }
+
+  /* Animated Checkmark SVG Styles */
+  .cg-icon-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .cg-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 3;
+    stroke: #22c55e;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px #22c55e;
+    animation: fillIcon .4s ease-in-out .4s forwards, scaleIcon .3s ease-in-out .9s forwards;
+  }
+  .cg-icon-circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 3;
+    stroke-miterlimit: 10;
+    stroke: #22c55e;
+    fill: none;
+    animation: strokeCircle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+  .cg-icon-check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: strokeCheck 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+  }
+  @keyframes strokeCircle {
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes strokeCheck {
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes fillIcon {
+    100% { box-shadow: inset 0px 0px 0px 30px rgba(34, 197, 94, 0.1); }
+  }
+  @keyframes scaleIcon {
+    0%, 100% { transform: none; }
+    50% { transform: scale3d(1.1, 1.1, 1); }
   }
   .balloon{
     position:absolute; bottom:-20vh; width:28px; height:36px;
@@ -343,16 +1002,16 @@
     text-shadow: 0 2px 8px rgba(0,0,0,0.5);
   }
   #realTimeDigits {
-    font-size: 10vw;
+    font-size: clamp(48px, 12vw, 120px);
     font-weight: 900;
     letter-spacing: -0.05em;
   }
   #realTimeDate {
-    font-size: 2vw;
+    font-size: clamp(14px, 3vw, 24px);
     margin-top: 10px;
     opacity: 0.8;
   }
-  /* Back button for real time mode */
+  /* Back button for real time mode & focus mode */
   #backButton {
     position: fixed;
     top: 12px;
@@ -379,120 +1038,469 @@
   #backButton::after {
     content: "←";
   }
+
+  /* ===== Focus Mode (Fullscreen A Mode) ===== */
+  .focus-mode-active .brand,
+  .focus-mode-active #todo-panel,
+  .focus-mode-active #candle-area,
+  .focus-mode-active #controls {
+    display: none !important;
+  }
+  .focus-mode-active .main {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    height: 100vh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .focus-mode-active #timer-container {
+    position: static !important;
+    transform: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    cursor: pointer;
+  }
+  .focus-mode-active #timer {
+    display: flex !important;
+    gap: 2vw !important;
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+  .focus-mode-active {
+    --digit-w: clamp(48px, 14vw, 320px) !important;
+    --digit-h: clamp(68px, 20vw, 450px) !important;
+    --digit-radius: clamp(8px, 1.5vw, 32px) !important;
+  }
+  /* Shrink digits slightly when showing hours in focus mode so they fit on screen */
+  .focus-mode-active #timer.show-hours {
+    --digit-w: clamp(24px, 9vw, 240px) !important;
+    --digit-h: clamp(36px, 13vw, 340px) !important;
+  }
+  .focus-mode-active .digit {
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15) !important;
+  }
+  /* Hide colons (dots) in Focus Mode but keep spacer widths */
+  .focus-mode-active .colon {
+    color: transparent !important;
+    text-shadow: none !important;
+  }
+  .focus-mode-active #backButton {
+    display: flex !important;
+  }
+  /* Default Glassy background in focus mode (unless keep colors is on) */
+  body:not(.keep-focus-colors).focus-mode-active .digit {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  body:not(.keep-focus-colors).focus-mode-active .digit .top {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+  body:not(.keep-focus-colors).focus-mode-active .digit .bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+  body:not(.keep-focus-colors).focus-mode-active .top-flip,
+  body:not(.keep-focus-colors).focus-mode-active .bottom-flip {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  body:not(.keep-focus-colors).focus-mode-active .value {
+    color: #ffffff !important;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+  body:not(.keep-focus-colors).focus-mode-active.has-custom-colors .value {
+    color: var(--clock-text) !important;
+  }
+
+  /* GPU Layer promotion to prevent 1px layout shifts during transitions */
+  .digit .top,
+  .digit .bottom,
+  .top-flip,
+  .bottom-flip {
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Premium Custom Toggle Switches */
+  .switch-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #fff;
+    opacity: 0.95;
+    user-select: none;
+    margin: 4px 0;
+  }
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 20px;
+    vertical-align: middle;
+  }
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .switch input:checked + .slider {
+    background: linear-gradient(135deg, #ffd166, #ff9a00);
+    border-color: rgba(255, 154, 0, 0.4);
+  }
+  .switch input:checked + .slider:before {
+    transform: translateX(18px);
+    background-color: #111;
+  }
+
+  /* Audio progress slider */
+  #audioProgress {
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.15);
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+    transition: background 0.2s;
+  }
+  #audioProgress:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+  #audioProgress::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  #audioProgress::-webkit-slider-thumb {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: #ffd166;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -3px;
+    box-shadow: 0 0 8px rgba(255, 209, 102, 0.5);
+    transition: transform 0.1s, background 0.1s;
+  }
+  #audioProgress::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #ff9a00;
+  }
+  #audioProgress::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    background: transparent;
+    border-radius: 3px;
+  }
+  #audioProgress::-moz-range-thumb {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: #ffd166;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 8px rgba(255, 209, 102, 0.5);
+  }
+  /* Disable overlapping glass blurs behind menu to completely bypass Chrome rendering bugs */
+  body.menu-is-open .clock-transparent .digit,
+  body.menu-is-open #todo-panel.todo-glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 </style>
+  <meta name="google-site-verification" content="Nqqnyq0A5jsFrZ3N5Lp_WYGd29JBSqphhOOAEY88YEM" />
 </head>
-<body>
-  <div class="brand">MADE BY ANABRATA V2.0</div>
+<body class="todo-on">
   <div class="main" id="main">
     <!-- Timer -->
     <section id="timer-container" aria-label="Timer">
       <div id="timer"></div>
       <div id="simpleTimer">00:00</div>
     </section>
-    <!-- To‑do -->
-    <section id="todo-panel" class="todo-clear" aria-label="To‑do list">
-      <h4 id="todoTitle">To‑do</h4>
+    <!-- To-do -->
+    <section id="todo-panel" class="todo-glass" aria-label="To-do list">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <h4 id="todoTitle" style="margin: 0;">To-do</h4>
+        <button id="closeTodoBtn" aria-label="Hide to-do list" style="background: none; border: none; color: #fff; opacity: 0.6; cursor: pointer; font-size: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">✕</button>
+      </div>
       <ol id="todoList"></ol>
     </section>
     <!-- Candle -->
     <section id="candle-area" aria-label="Candle">
-      <div class="candle-clip">
-        <div class="candle-wrap" id="candleWrap">
-          <div class="wax" id="wax">
-            <div class="waxTop"></div>
-            <div class="wick" id="wick"></div>
-          </div>
-          <div class="stub" id="stub"></div>
+      <div class="candle-wrap" id="candleWrap">
+        <div class="candle-shadow"></div>
+        <div class="wax" id="wax">
+          <div class="waxTop"></div>
+          <div class="drip drip-1"></div>
+          <div class="drip drip-2"></div>
+          <div class="drip drip-3"></div>
+          <div class="wick" id="wick"></div>
         </div>
+        <div class="stub" id="stub"></div>
+        <div class="flame" id="flame"><div class="flame-core"></div></div>
       </div>
-      <div class="flame" id="flame"><div class="flame-core"></div></div>
     </section>
   </div>
-  <!-- Controls -->
+  <!-- Controls Drawer Sidebar -->
   <div id="controls">
-    <div class="card">
-      <label class="small">Timer</label>
-      <div class="row">
-        <div style="flex:1"><label for="hoursInput">Hours</label><input id="hoursInput" type="number" min="0" value="0"></div>
-        <div style="flex:1"><label for="minInput">Minutes</label><input id="minInput" type="number" min="0" value="1"></div>
-        <div style="flex:1"><label for="secInput">Seconds</label><input id="secInput" type="number" min="0" max="59" value="0"></div>
-      </div>
-      <div class="row">
-        <label><input type="checkbox" id="showHours"> Show hours</label>
-        <label><input type="checkbox" id="showSeconds" checked> Show seconds</label>
-        <label><input type="checkbox" id="useFlip" checked> Use flip style</label>
-      </div>
-      <div class="row">
-        <button id="primaryBtn" class="btn wide">Start</button>
-        <button id="resetBtn" class="btn alt wide">Reset</button>
-        <button id="fsBtn" class="btn warn wide">Fullscreen</button>
+    <!-- Sidebar Navigation Tabs -->
+    <div class="menu-tabs">
+      <button class="tab-btn active" data-tab="timer" title="Timer">⏱<span>Timer</span></button>
+      <button class="tab-btn" data-tab="appearance" title="Appearance">🎨<span>Theme</span></button>
+      <button class="tab-btn" data-tab="media" title="Media">🎵<span>Media</span></button>
+      <button class="tab-btn" data-tab="layout" title="Layout">⚙<span>Layout</span></button>
+      <!-- Contribution credit pushed to the bottom of the sidebar tabs -->
+      <div style="margin-top:auto; font-size:9px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.3); text-align:center; transform:rotate(-90deg); white-space:nowrap; margin-bottom:30px; letter-spacing:1.5px; pointer-events:none; font-family:system-ui, sans-serif;">
+        By Anabrata
       </div>
     </div>
-    <div class="card">
-      <label class="small">Background gradient</label>
-      <div class="row">
-        <div style="flex:1"><label for="bgAngle">Angle</label><input id="bgAngle" type="number" min="0" max="360" value="135"></div>
-        <div style="flex:1"><label for="bgC1">Color 1</label><input id="bgC1" type="color" value="#3a1c71"></div>
-        <div style="flex:1"><label for="bgC2">Color 2</label><input id="bgC2" type="color" value="#d76d77"></div>
-        <div style="flex:1"><label for="bgC3">Color 3</label><input id="bgC3" type="color" value="#ffaf7b"></div>
-      </div>
-      <div class="row">
-        <div style="flex:1; display:flex; gap:8px; align-items:center">
-          <div style="flex:1">
-            <label for="todoColor">To‑do list color</label><input id="todoColor" type="color" value="#ffffff">
+    
+    <!-- Tab Content Sections -->
+    <div class="menu-content">
+      <!-- TIMER TAB -->
+      <div class="tab-pane active" id="tab-timer">
+        <div class="tab-header">
+          <h3>Timer Settings</h3>
+          <button class="menu-close-btn" id="menuCloseBtn" aria-label="Close settings">×</button>
+        </div>
+        <div class="pane-body">
+          <div class="input-grid">
+            <div>
+              <label for="hoursInput">Hours</label>
+              <div class="time-spinner">
+                <button type="button" class="spin-btn" id="hMinus">-</button>
+                <input id="hoursInput" type="number" min="0" value="0">
+                <button type="button" class="spin-btn" id="hPlus">+</button>
+              </div>
+            </div>
+            <div>
+              <label for="minInput">Minutes</label>
+              <div class="time-spinner">
+                <button type="button" class="spin-btn" id="mMinus">-</button>
+                <input id="minInput" type="number" min="0" value="1">
+                <button type="button" class="spin-btn" id="mPlus">+</button>
+              </div>
+            </div>
+            <div>
+              <label for="secInput">Seconds</label>
+              <div class="time-spinner">
+                <button type="button" class="spin-btn" id="sMinus">-</button>
+                <input id="secInput" type="number" min="0" max="59" value="0">
+                <button type="button" class="spin-btn" id="sPlus">+</button>
+              </div>
+            </div>
           </div>
-          <button id="todoApply" class="btn small">Apply</button>
-          <button id="todoClear" class="btn small" title="Transparent">Clear</button>
+          <div class="row" style="margin-top: 4px; gap: 8px;">
+            <button id="primaryBtn" class="btn wide" style="flex:1;">Start</button>
+            <button id="resetBtn" class="btn alt wide" style="flex:1;">Reset</button>
+          </div>
+          <div class="row">
+            <button id="fsBtn" class="btn warn wide" style="width: 100%;">Fullscreen</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px; margin-top:8px;">
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="showHours"><span class="slider"></span></span>
+              Show hours
+            </label>
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="showSeconds" checked><span class="slider"></span></span>
+              Show seconds
+            </label>
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="useFlip" checked><span class="slider"></span></span>
+              Use flip style
+            </label>
+          </div>
         </div>
       </div>
-      <div class="row">
-        <label><input type="checkbox" id="todoGlass" checked> To‑do transparency effect</label>
+      
+      <!-- APPEARANCE TAB -->
+      <div class="tab-pane" id="tab-appearance">
+        <div class="tab-header">
+          <h3>Appearance & Theme</h3>
+        </div>
+        <div class="pane-body">
+          <div class="settings-section-title">Background Gradient</div>
+          <div class="row" style="align-items: center; justify-content: space-between; width:100%; gap:8px;">
+            <div>
+              <label style="font-size:10px; opacity:0.8; display:block; margin-bottom:4px;">Colors</label>
+              <div style="display:flex; gap:6px;">
+                <input id="bgC1" type="color" value="#3a1c71" title="Color 1" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                <input id="bgC2" type="color" value="#d76d77" title="Color 2" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                <input id="bgC3" type="color" value="#ffaf7b" title="Color 3" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <label style="font-size: 10px; opacity: 0.8;">Angle</label>
+              <div id="angleDial" style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.18); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);">
+                <div id="dialNeedle" style="position: absolute; width: 2px; height: 14px; background: linear-gradient(to top, transparent 20%, #ffd166 100%); transform-origin: bottom center; bottom: 50%; transform: rotate(135deg); border-radius: 1px; box-shadow: 0 0 6px #ffd166;"></div>
+                <div style="position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fff; z-index: 2;"></div>
+              </div>
+              <input id="bgAngle" type="hidden" value="135">
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; margin-left: 12px;">
+              <label style="font-size: 10px; opacity: 0.8;">Solid Color</label>
+              <input id="bgSolid" type="color" value="#3a1c71" title="Set whole page to one solid color" style="width:36px; height:36px; padding:0; border:none; border-radius:6px; cursor:pointer; background:rgba(255,255,255,0.1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);">
+            </div>
+          </div>
+          
+          <div class="settings-section-title" style="margin-top:8px;">Flip Clock Colors</div>
+          <div class="input-grid" style="grid-template-columns: repeat(3, 1fr); gap: 6px;">
+            <div><label for="clockC1">Panel 1</label><input id="clockC1" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+            <div><label for="clockC2">Panel 2</label><input id="clockC2" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+            <div><label for="clockC3">Panel 3</label><input id="clockC3" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+          </div>
+          <div class="input-grid" style="grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px;">
+            <div><label for="textColor">Text</label><input id="textColor" type="color" value="#000000" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+            <div><label for="colonColor">Colon</label><input id="colonColor" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+            <div><label for="simpleColor">Simple</label><input id="simpleColor" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <label class="small">Media &amp; background</label>
-      <div class="row" style="gap:8px; align-items:center">
-        <button id="addMusicBtn" class="btn alt small">Add music</button>
-        <input id="musicFiles" type="file" accept="audio/*" multiple style="display:none" />
-        <button id="musicPrev" class="btn small" title="Previous">⏮</button>
-        <button id="musicPlay" class="btn small" title="Play/Pause">▶</button>
-        <button id="musicNext" class="btn small" title="Next">⏭</button>
-        <label style="margin-left:4px"><input type="checkbox" id="musicLoop" checked> Loop</label>
-        <span id="musicNow" style="color:#fff; font-size:12px; opacity:.95; max-width:220px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis"></span>
+      
+      <!-- MEDIA TAB -->
+      <div class="tab-pane" id="tab-media">
+        <div class="tab-header">
+          <h3>Media & Background</h3>
+        </div>
+        <div class="pane-body">
+          <div class="settings-section-title">Music Playlist</div>
+          <div class="row" style="gap:6px; align-items:center; width:100%;">
+            <button id="addMusicBtn" class="btn alt small" style="flex:1;">Add music</button>
+            <input id="musicFiles" type="file" accept="audio/*" multiple style="display:none" />
+            <button id="musicPrev" class="btn small" title="Previous">⏮</button>
+            <button id="musicPlay" class="btn small" title="Play/Pause">▶</button>
+            <button id="musicNext" class="btn small" title="Next">⏭</button>
+          </div>
+          <div class="row" style="margin-top: 4px; display: none;">
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="musicLoop" checked><span class="slider"></span></span>
+              Loop playlist
+            </label>
+          </div>
+          <span id="musicNow" style="display:block; color:#ffd166; font-size:11px; opacity:.95; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:230px;"></span>
+          
+          <!-- Custom seekable progress bar player -->
+          <div id="audioPlayer" style="display:none; flex-direction:column; gap:6px; margin: 8px 0; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); width:100%;">
+            <div style="display:flex; justify-content:space-between; font-size:10px; opacity:0.8; color:#fff; font-family: system-ui, sans-serif;">
+              <span id="audioCurrentTime">0:00</span>
+              <span id="audioDuration">0:00</span>
+            </div>
+            <input type="range" id="audioProgress" min="0" max="100" value="0" step="0.1" style="width:100%; cursor:pointer;" />
+          </div>
+          
+          <div class="settings-section-title" style="margin-top:8px;">Backdrop Image</div>
+          <div class="row" style="gap:8px; align-items:center; width:100%;">
+            <button id="bgImageBtn" class="btn small" style="flex:1;">Custom image</button>
+            <input id="bgImageFile" type="file" accept="image/*" style="display:none" />
+            <button id="bgImageClear" class="btn small alt" style="flex:1;">Clear</button>
+          </div>
+          <span id="bgImageName" style="display:block; color:#a78bfa; font-size:11px; opacity:.95; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:230px; margin-top:2px;"></span>
+        </div>
       </div>
-      <div class="row" style="gap:8px; align-items:center; margin-top:6px">
-        <button id="bgImageBtn" class="btn small">Custom image</button>
-        <input id="bgImageFile" type="file" accept="image/*" style="display:none" />
-        <button id="bgImageClear" class="btn small">Clear image</button>
-        <span id="bgImageName" style="color:#fff; font-size:12px; opacity:.95; max-width:240px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis"></span>
-      </div>
-    </div>
-    <div class="card">
-      <label class="small">Flip clock colors</label>
-      <div class="row">
-        <div style="flex:1"><label for="clockC1">Panel 1</label><input id="clockC1" type="color" value="#ffffff"></div>
-        <div style="flex:1"><label for="clockC2">Panel 2</label><input id="clockC2" type="color" value="#ffffff"></div>
-        <div style="flex:1"><label for="clockC3">Panel 3</label><input id="clockC3" type="color" value="#ffffff"></div>
-      </div>
-      <div class="row">
-        <div style="flex:1"><label for="textColor">Digit color</label><input id="textColor" type="color" value="#000000"></div>
-        <div style="flex:1"><label for="colonColor">Colon color</label><input id="colonColor" type="color" value="#ffffff"></div>
-      </div>
-      <div class="row">
-        <div style="flex:1"><label for="simpleColor">Simple timer color</label><input id="simpleColor" type="color" value="#ffffff"></div>
-      </div>
-    </div>
-    <div class="card">
-      <label class="small">Layout</label>
-      <div class="row">
-        <label><input type="checkbox" id="hideCandle"> Hide candle</label>
-        <label><input type="checkbox" id="centerClock"> Center clock</label>
-        <label><input type="checkbox" id="onlyCandle"> Only candle mode</label>
-        <label><input type="checkbox" id="showTodo" checked> Show to‑do list</label>
-        <label><input type="checkbox" id="realTimeMode"> Real time mode</label>
-      </div>
-      <div class="row">
-        <div style="flex:1"><label for="realTimeColor">Clock color</label><input id="realTimeColor" type="color" value="#ffffff"></div>
+      
+      <!-- LAYOUT TAB -->
+      <div class="tab-pane" id="tab-layout">
+        <div class="tab-header">
+          <h3>Layout & Flags</h3>
+        </div>
+        <div class="pane-body">
+          <div class="settings-section-title">Layout options</div>
+          <div style="display: flex; flex-direction: column; gap: 4px; width:100%;">
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="hideCandle"><span class="slider"></span></span>
+              Hide candle
+            </label>
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="centerClock"><span class="slider"></span></span>
+              Center clock
+            </label>
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="onlyCandle"><span class="slider"></span></span>
+              Only candle mode
+            </label>
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="showTodo" checked><span class="slider"></span></span>
+              Show to-do list
+            </label>
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="realTimeMode"><span class="slider"></span></span>
+              Real time mode
+            </label>
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="clockTransparent"><span class="slider"></span></span>
+              Transparent clock
+            </label>
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="fullscreenAMode"><span class="slider"></span></span>
+              Fullscreen A Mode
+            </label>
+            <label class="switch-row" style="margin-left: 20px;">
+              <span class="switch"><input type="checkbox" id="keepClockColorsInFocus"><span class="slider"></span></span>
+              Keep Clock Colors in Focus Mode
+            </label>
+          </div>
+          
+          <div class="settings-section-title" style="margin-top:8px;">To-Do Styling</div>
+          <div class="row" style="align-items: center; gap: 8px; width:100%;">
+            <div style="flex: 1;">
+              <input id="todoColor" type="color" value="#ffffff" style="width:100%; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+            </div>
+            <button id="todoApply" class="btn small alt" style="padding: 0 12px; height: 28px;">Apply</button>
+            <button id="todoClear" class="btn small warn" style="padding: 0 12px; height: 28px;">Clear</button>
+          </div>
+          <div class="row" style="margin-top: 4px;">
+            <label class="switch-row">
+              <span class="switch"><input type="checkbox" id="todoGlass" checked><span class="slider"></span></span>
+              Transparency effect
+            </label>
+          </div>
+          
+          <div class="row" style="margin-top: 8px; align-items: center; gap: 8px; width:100%;">
+            <label for="realTimeColor" style="font-size:11px; white-space:nowrap;">Real-time clock color</label>
+            <input id="realTimeColor" type="color" value="#ffffff" style="width:36px; height:22px; padding:0; border:none; border-radius:4px; cursor:pointer; background:rgba(0,0,0,0.2) !important;">
+          </div>
+          
+          <div class="settings-section-title" style="margin-top:12px;">Clock Font File</div>
+          <div class="row" style="gap:8px; align-items:center; width:100%;">
+            <button id="fontBtn" class="btn small alt" style="flex:1;">Upload Font</button>
+            <input id="fontFiles" type="file" accept=".ttf,.otf,.woff,.woff2" style="display:none" />
+            <button id="fontReset" class="btn small warn" title="Reset font" style="padding:0 12px; height:32px;">Reset</button>
+          </div>
+          <span id="fontNow" style="display:block; color:#ffd166; font-size:11px; opacity:.95; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:230px;"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -505,13 +1513,22 @@
   </div>
   <!-- Back button for real time mode -->
   <button id="backButton" aria-label="Back to main view"></button>
+  <!-- Floating settings menu toggle -->
+  <button id="menuToggle" aria-label="Toggle settings menu">⚙ Settings</button>
   <!-- 3-2-1 overlay -->
   <div id="countOverlay" aria-hidden="true">
     <div id="countInner" class="pop">3</div>
   </div>
-  <!-- Congrats overlay with balloons -->
   <div id="congrats" aria-modal="true" role="dialog">
     <div id="cgCard">
+      <div class="cg-icon-wrap">
+        <div class="cg-icon">
+          <svg viewBox="0 0 52 52">
+            <circle class="cg-icon-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="cg-icon-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+      </div>
       <h2 id="cgTitle">Congratulations!</h2>
       <p id="cgMsg">Timer complete 🥰</p>
       <button id="cgClose">Close</button>
@@ -532,6 +1549,28 @@
   </div>
 <script>
   const $ = (s) => document.querySelector(s);
+  
+  /* ---------- DOM Selectors ---------- */
+  const timerFlip = $("#timer");
+  const timerSimple = $("#simpleTimer");
+  const primaryBtn = $("#primaryBtn");
+  const area = $("#candle-area");
+  const waxEl = $("#wax");
+  const wickEl = $("#wick");
+  const flameEl = $("#flame");
+  const candleWrap = $("#candleWrap");
+  const stubEl = $("#stub");
+  const congrats = $("#congrats");
+  const todoList = $("#todoList");
+  const musicFiles = $("#musicFiles");
+  const musicNow = $("#musicNow");
+  const musicPlayBtn = $("#musicPlay");
+  const bgImageBtn = $("#bgImageBtn");
+  const bgImageFile = $("#bgImageFile");
+  const bgImageClear = $("#bgImageClear");
+  const bgImageName = $("#bgImageName");
+  const backButton = $("#backButton");
+
   /* ---------- Utilities ---------- */
   function afterNextPaint(cb){
     requestAnimationFrame(() => requestAnimationFrame(cb));
@@ -543,10 +1582,14 @@
     if (bgObjectUrl){
       URL.revokeObjectURL(bgObjectUrl);
       bgObjectUrl = null;
-      const nameEl = $("#bgImageName"); if (nameEl) nameEl.textContent = "";
+      if (bgImageName) bgImageName.textContent = "";
     }
+    const c1 = $("#bgC1")?.value || "#3a1c71";
+    const c2 = $("#bgC2")?.value || "#d76d77";
+    const c3 = $("#bgC3")?.value || "#ffaf7b";
     const ang = parseInt($("#bgAngle")?.value || "135", 10);
-    document.body.style.backgroundImage = gradientStr(ang, $("#bgC1")?.value || "#3a1c71", $("#bgC2")?.value || "#d76d77", $("#bgC3")?.value || "#ffaf7b");
+    
+    document.body.style.backgroundImage = gradientStr(ang, c1, c2, c3);
     document.body.style.backgroundSize = "cover";
     document.body.style.backgroundPosition = "center";
     document.body.style.backgroundAttachment = "fixed";
@@ -556,12 +1599,23 @@
   }
   function restyleClockPanels(){
     if (!$("#clockC1")) return;
-    document.documentElement.style.setProperty("--clock-c1", $("#clockC1").value);
-    document.documentElement.style.setProperty("--clock-c2", $("#clockC2").value);
-    document.documentElement.style.setProperty("--clock-c3", $("#clockC3").value);
+    const c1 = $("#clockC1").value;
+    const c2 = $("#clockC2").value;
+    const c3 = $("#clockC3").value;
+
+    document.documentElement.style.setProperty("--clock-c1", c1);
+    document.documentElement.style.setProperty("--clock-c2", c2);
+    document.documentElement.style.setProperty("--clock-c3", c3);
     document.documentElement.style.setProperty("--clock-text", $("#textColor").value);
     document.documentElement.style.setProperty("--colon-color", $("#colonColor").value);
     document.documentElement.style.setProperty("--simple-color", $("#simpleColor")?.value || "#ffffff");
+
+    // Toggle custom colors class for Focus Mode override
+    if (c1 !== "#ffffff" || c2 !== "#ffffff" || c3 !== "#ffffff") {
+      document.body.classList.add("has-custom-colors");
+    } else {
+      document.body.classList.remove("has-custom-colors");
+    }
   }
   /* ---------- Flip clock ---------- */
   function createDigit(initial = "0"){
@@ -590,6 +1644,9 @@
     const topVal = digitEl.querySelector(".top .value");
     const botVal = digitEl.querySelector(".bottom .value");
     
+    // Add flipping-top class to handle clean transition
+    digitEl.classList.add("flipping-top");
+    
     // Create top flip element
     const topFlip = document.createElement("div");
     topFlip.className = "top-flip";
@@ -615,6 +1672,9 @@
       topVal.textContent = newVal;
       topFlip.remove();
       
+      digitEl.classList.remove("flipping-top");
+      digitEl.classList.add("flipping-bottom");
+      
       // Create bottom flip element
       const bottomFlip = document.createElement("div");
       bottomFlip.className = "bottom-flip";
@@ -638,6 +1698,8 @@
         botVal.textContent = newVal;
         digitEl.dataset.value = newVal;
         bottomFlip.remove();
+        
+        digitEl.classList.remove("flipping-bottom");
       });
     });
   }
@@ -700,9 +1762,6 @@
     $("#simpleTimer").textContent = out;
   }
   /* ---------- Countdown state ---------- */
-  const timerFlip = $("#timer");
-  const timerSimple = $("#simpleTimer");
-  const primaryBtn = $("#primaryBtn");
   let flipDigits = [];
   let useFlip = true;
   let totalSec = 0;
@@ -720,6 +1779,8 @@
     const showS = $("#showSeconds")?.checked ?? true;
     
     if (useFlip){
+      if (showH) timerFlip.classList.add("show-hours");
+      else timerFlip.classList.remove("show-hours");
       timerFlip.style.display = "flex";
       timerSimple.style.display = "none";
       flipDigits = buildFlip(timerFlip, showH, showS);
@@ -739,7 +1800,36 @@
       safeBuildClock();
     }
   }
-  
+
+  function updateFocusModeState() {
+    const isFocusChecked = $("#fullscreenAMode")?.checked;
+    if (isFocusChecked) {
+      document.body.classList.add("focus-mode-active");
+      if (!document.fullscreenElement) {
+        const req = document.documentElement.requestFullscreen || 
+                    document.documentElement.webkitRequestFullscreen || 
+                    document.documentElement.msRequestFullscreen;
+        if (req) {
+          req.call(document.documentElement).catch((e) => {
+            console.warn("Fullscreen request failed:", e);
+          });
+        }
+      }
+    } else {
+      document.body.classList.remove("focus-mode-active");
+      if (document.fullscreenElement) {
+        const exit = document.exitFullscreen || 
+                     document.webkitExitFullscreen || 
+                     document.msExitFullscreen;
+        if (exit) {
+          exit.call(document).catch((e) => {
+            console.warn("Exit fullscreen failed:", e);
+          });
+        }
+      }
+    }
+  }
+
   function startCountdown(){
     const h = Math.max(0, parseInt($("#hoursInput")?.value || "0", 10));
     const m = Math.max(0, parseInt($("#minInput")?.value || "0", 10));
@@ -751,7 +1841,6 @@
     stubEl.style.display = "none";
     flameEl.classList.remove("off");
     setWaxHeightByProgress(1);
-    afterNextPaint(positionFlame);
     
     const showH = $("#showHours")?.checked ?? false;
     const showS = $("#showSeconds")?.checked ?? true;
@@ -785,6 +1874,7 @@
     lastWhole = Math.ceil(totalSec);
     running = true;
     primaryBtn.textContent = "Stop";
+    updateFocusModeState();
     rafId = requestAnimationFrame(loop);
   }
   
@@ -809,7 +1899,6 @@
     // Update candle
     const p = totalSec > 0 ? remainMs / (totalSec * 1000) : 0;
     setWaxHeightByProgress(p);
-    positionFlame();
     
     // Check if countdown is complete
     if (remainMs <= 0) { 
@@ -857,7 +1946,7 @@
       paused = true; 
       running = false; 
       primaryBtn.textContent = "Resume"; 
-      afterNextPaint(positionFlame); 
+      updateFocusModeState();
       return;
     }
     if (paused){
@@ -866,7 +1955,7 @@
       paused = false; 
       running = true; 
       primaryBtn.textContent = "Stop"; 
-      afterNextPaint(positionFlame);
+      updateFocusModeState();
       rafId = requestAnimationFrame(loop);
     }
   }
@@ -885,6 +1974,7 @@
     hideCongrats();
     $("#countOverlay").style.display = "none"; 
     countInActive = false;
+    updateFocusModeState();
     
     afterNextPaint(ensureVisible);
   }
@@ -901,40 +1991,25 @@
     candleWrap.classList.add("vanish"); 
     showCongrats(); 
     primaryBtn.textContent = "Start";
+    updateFocusModeState();
   }
   
   /* ---------- Candle & flame positioning ---------- */
-  const area = $("#candle-area");
-  const waxEl = $("#wax");
-  const wickEl = $("#wick");
-  const flameEl = $("#flame");
-  const candleWrap = $("#candleWrap");
-  const stubEl = $("#stub");
   const baseWaxHeight = 380;
   const minStub = 58;
-  
-  function positionFlame(){
-    if (!area || getComputedStyle(area).display === "none") return;
-    
-    const a = area.getBoundingClientRect();
-    const w = wickEl.getBoundingClientRect();
-    const cx = w.left + w.width / 2 - a.left;
-    const topAnchor = w.top - a.top;
-    
-    flameEl.style.left = `${cx}px`;
-    flameEl.style.top = `${topAnchor + 6}px`;
-  }
   
   function setWaxHeightByProgress(progress){
     const usable = baseWaxHeight - minStub;
     const h = minStub + Math.max(0, usable * progress);
     waxEl.style.height = `${h}px`;
+    flameEl.style.bottom = `${h + 12}px`;
   }
   
   function snapResetCandle(){
     // Add no-transitions class to prevent animation during reset
     candleWrap.classList.add("no-transitions"); 
     waxEl.classList.add("no-transitions");
+    flameEl.classList.add("no-transitions");
     
     // Reset candle state
     candleWrap.classList.remove("vanish"); 
@@ -945,34 +2020,36 @@
     // Force reflow
     void candleWrap.offsetHeight; 
     
-    // Position flame
-    positionFlame();
-    
     // Remove no-transitions class after next frame
     requestAnimationFrame(()=>{
       candleWrap.classList.remove("no-transitions"); 
       waxEl.classList.remove("no-transitions"); 
+      flameEl.classList.remove("no-transitions");
     });
   }
   
-  // Set up observers for responsive flame positioning
-  new ResizeObserver(()=> requestAnimationFrame(()=>positionFlame())).observe(area);
-  new MutationObserver(()=> requestAnimationFrame(()=>positionFlame())).observe(document.body,{attributes:true,attributeFilter:["class"]});
-  waxEl.addEventListener("transitionend", ()=> requestAnimationFrame(()=>positionFlame()));
-  window.addEventListener("resize", () => requestAnimationFrame(() => positionFlame()));
-  
   /* ---------- Congrats overlay ---------- */
-  const congrats = $("#congrats");
-  $("#cgClose")?.addEventListener("click", () => { 
-    if (congrats) congrats.style.display = "none"; 
-  });
+  $("#cgClose")?.addEventListener("click", hideCongrats);
   
   function showCongrats(){ 
-    if (congrats) congrats.style.display = "flex"; 
+    if (congrats) {
+      congrats.style.display = "flex"; 
+      // Force reflow to trigger CSS transitions
+      void congrats.offsetWidth;
+      congrats.classList.add("active");
+    }
   }
   
   function hideCongrats(){ 
-    if (congrats) congrats.style.display = "none"; 
+    if (congrats) {
+      congrats.classList.remove("active");
+      // Wait for slide-down transition to finish before hiding display
+      setTimeout(() => {
+        if (!congrats.classList.contains("active")) {
+          congrats.style.display = "none";
+        }
+      }, 450);
+    }
   }
   
   /* ---------- Fullscreen ---------- */
@@ -990,13 +2067,24 @@
   }
   
   $("#fsBtn").addEventListener("click", enterFullscreen);
-  document.addEventListener("fullscreenchange", () => { 
-    document.body.classList.toggle("is-fs", !!document.fullscreenElement); 
-  });
   
-  /* ---------- To‑do logic ---------- */
-  const todoList = $("#todoList");
+  const handleFsChange = () => {
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+    document.body.classList.toggle("is-fs", isFs); 
+    
+    if (!isFs) {
+      const fam = $("#fullscreenAMode");
+      if (fam && fam.checked) {
+        fam.checked = false;
+        updateFocusModeState();
+      }
+    }
+  };
+  document.addEventListener("fullscreenchange", handleFsChange);
+  document.addEventListener("webkitfullscreenchange", handleFsChange);
+  document.addEventListener("msfullscreenchange", handleFsChange);
   
+  /* ---------- To-do logic ---------- */
   function makeTodoItem(text = ""){
     const li = document.createElement("li");
     const label = document.createElement("label"); 
@@ -1071,9 +2159,6 @@
   });
   
   /* ---------- Music ---------- */
-  const musicFiles = $("#musicFiles");
-  const musicNow = $("#musicNow");
-  const musicPlayBtn = $("#musicPlay");
   const audio = new Audio(); 
   audio.preload = "metadata";
   
@@ -1085,7 +2170,7 @@
       musicNow.textContent = playlist.length ? `${trackIndex+1}/${playlist.length} • ${playlist[trackIndex].name}` : ""; 
     }
   }
-  
+
   function loadPlaylist(files){ 
     // Clean up previous URLs
     objectUrls.forEach((u) => URL.revokeObjectURL(u));
@@ -1095,6 +2180,7 @@
     
     // Create new URLs for files
     for(const f of files){ 
+      if (!f.type.startsWith("audio/")) continue;
       const url = URL.createObjectURL(f); 
       objectUrls.add(url); 
       playlist.push({name: f.name, url}); 
@@ -1105,8 +2191,15 @@
     // Set audio source if playlist exists
     if(playlist.length){ 
       audio.src = playlist[trackIndex].url; 
-    } else { 
-      audio.removeAttribute("src"); 
+      // Show audio player
+      const ap = $("#audioPlayer");
+      if (ap) ap.style.display = "flex";
+      // Auto start playlist
+      startPlaylist();
+    } else {
+      audio.removeAttribute("src");
+      const ap = $("#audioPlayer");
+      if (ap) ap.style.display = "none";
     }
   }
   
@@ -1118,15 +2211,12 @@
       console.warn("Playback failed:", err);
     }); 
     updateNow(); 
-    if (musicPlayBtn) musicPlayBtn.textContent = "⏸"; 
   }
   
   function startPlaylist(){ 
     if(!playlist.length) return; 
     if(!audio.src) audio.src = playlist[trackIndex].url; 
-    audio.play().then(()=>{
-      if (musicPlayBtn) musicPlayBtn.textContent = "⏸"; 
-    }).catch((err) => {
+    audio.play().catch((err) => {
       console.warn("Playback failed:", err);
     }); 
     updateNow(); 
@@ -1134,7 +2224,6 @@
   
   function pausePlaylist(){ 
     audio.pause(); 
-    if (musicPlayBtn) musicPlayBtn.textContent = "▶"; 
   }
   
   function nextTrack(){ 
@@ -1144,31 +2233,36 @@
   function prevTrack(){ 
     if(playlist.length) playTrack(trackIndex - 1); 
   }
+
+  // Audio player seek/timeline integration
+  const audioProgress = $("#audioProgress");
+  const audioCurrentTime = $("#audioCurrentTime");
+  const audioDuration = $("#audioDuration");
   
-  // Audio event listeners
-  audio.addEventListener("ended", () => {
-    if ($("#musicLoop")?.checked) {
-      audio.play().catch((err) => console.warn("Loop playback failed:", err));
-    } else {
-      nextTrack();
+  function formatTime(secs) {
+    if (isNaN(secs)) return "0:00";
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  }
+  
+  audio.addEventListener("timeupdate", () => {
+    if (audio.duration) {
+      const pct = (audio.currentTime / audio.duration) * 100;
+      if (audioProgress) audioProgress.value = pct;
+      if (audioCurrentTime) audioCurrentTime.textContent = formatTime(audio.currentTime);
     }
   });
   
-  audio.addEventListener("play", () => { 
-    if (musicPlayBtn) musicPlayBtn.textContent = "⏸"; 
+  audio.addEventListener("loadedmetadata", () => {
+    if (audioDuration) audioDuration.textContent = formatTime(audio.duration);
   });
   
-  audio.addEventListener("pause", () => { 
-    if (musicPlayBtn) musicPlayBtn.textContent = "▶"; 
+  audioProgress?.addEventListener("input", (e) => {
+    if (audio.duration) {
+      audio.currentTime = (parseFloat(e.target.value) / 100) * audio.duration;
+    }
   });
-  
-  // Button event listeners
-  $("#addMusicBtn")?.addEventListener("click", () => musicFiles?.click());
-  musicFiles?.addEventListener("change", (e) => loadPlaylist(e.target.files));
-  $("#musicPlay")?.addEventListener("click", () => audio.paused ? startPlaylist() : pausePlaylist());
-  $("#musicNext")?.addEventListener("click", nextTrack);
-  $("#musicPrev")?.addEventListener("click", prevTrack);
-  $("#musicLoop")?.addEventListener("change", (e) => audio.loop = !!e.target.checked);
   
   // Clean up URLs on unload
   window.addEventListener("beforeunload", () => {
@@ -1176,11 +2270,6 @@
   });
   
   /* ---------- Custom background image ---------- */
-  const bgImageBtn = $("#bgImageBtn"), 
-        bgImageFile = $("#bgImageFile"), 
-        bgImageClear = $("#bgImageClear"), 
-        bgImageName = $("#bgImageName");
-  
   bgImageBtn?.addEventListener("click", () => bgImageFile?.click());
   
   bgImageFile?.addEventListener("change", (e) => {
@@ -1230,434 +2319,493 @@
     $("#realTimeDate").textContent = dateStr;
   }
   
+  let realTimeTimerId = null;
   function toggleRealTimeMode() {
     const realTimeContainer = $("#realTimeContainer");
     const backButton = $("#backButton");
     
     if ($("#realTimeMode")?.checked) {
-      // Get current background from body
-      const bodyBg = getComputedStyle(document.body).backgroundImage;
-      const bodyBgColor = getComputedStyle(document.body).backgroundColor;
+      const bodyStyle = getComputedStyle(document.body);
+      const bodyBg = bodyStyle.backgroundImage;
+      const bodyBgColor = bodyStyle.backgroundColor;
       
-      // Apply the same background to real time container
-      realTimeContainer.style.backgroundImage = bodyBg;
-      realTimeContainer.style.backgroundColor = bodyBgColor;
-      realTimeContainer.style.backgroundSize = "cover";
-      realTimeContainer.style.backgroundPosition = "center";
-      realTimeContainer.style.backgroundAttachment = "fixed";
+      document.documentElement.style.setProperty("--bg-image", bodyBg);
+      document.documentElement.style.setProperty("--bg-color", bodyBgColor);
       
-      // Show real time mode
+      document.body.classList.add("real-time-mode");
       realTimeContainer.style.display = "flex";
       backButton.style.display = "flex";
       
-      // Update clock immediately and set interval
       updateRealTimeClock();
-      window.realTimeInterval = setInterval(updateRealTimeClock, 1000);
-      
-      // Hide everything else
-      document.body.classList.add("real-time-mode");
+      if (realTimeTimerId) clearInterval(realTimeTimerId);
+      realTimeTimerId = setInterval(updateRealTimeClock, 1000);
     } else {
-      // Hide real time mode
+      document.body.classList.remove("real-time-mode");
       realTimeContainer.style.display = "none";
       backButton.style.display = "none";
-      if (window.realTimeInterval) {
-        clearInterval(window.realTimeInterval);
-        window.realTimeInterval = null;
+      if (realTimeTimerId) {
+        clearInterval(realTimeTimerId);
+        realTimeTimerId = null;
       }
-      // Show everything else
-      document.body.classList.remove("real-time-mode");
     }
   }
   
-  // Back button functionality
+  // Back button event listener
   $("#backButton")?.addEventListener("click", () => {
-    const realTimeModeCheckbox = $("#realTimeMode");
-    if (realTimeModeCheckbox) {
-      realTimeModeCheckbox.checked = false;
+    const rtm = $("#realTimeMode");
+    if (rtm && rtm.checked) {
+      rtm.checked = false;
       toggleRealTimeMode();
     }
+    const fam = $("#fullscreenAMode");
+    if (fam && fam.checked) {
+      fam.checked = false;
+      updateFocusModeState();
+    }
   });
   
-  // Real time clock color functionality
-  function updateRealTimeColor() {
-    const color = $("#realTimeColor")?.value || "#ffffff";
-    const shadowColor = getComputedStyle(document.body).backgroundColor || "rgba(0,0,0,0.5)";
-    $("#realTimeDigits").style.color = color;
-    $("#realTimeDigits").style.textShadow = `0 2px 8px ${shadowColor}`;
-  }
-  
-  // Apply real time color on change
-  $("#realTimeColor")?.addEventListener("input", updateRealTimeColor);
-  
-  function applyLayoutFlags(){
-    document.body.classList.toggle("candle-off", $("#hideCandle")?.checked);
-    document.body.classList.toggle("center-clock", $("#centerClock")?.checked);
-    document.body.classList.toggle("only-candle", $("#onlyCandle")?.checked);
-    document.body.classList.toggle("todo-on", $("#showTodo")?.checked);
-    
+  // Click clock to play/pause in Focus Mode
+  $("#timer-container")?.addEventListener("click", () => {
+    if (document.body.classList.contains("focus-mode-active")) {
+      togglePrimary();
+    }
+  });
+
+  $("#realTimeMode")?.addEventListener("change", toggleRealTimeMode);
+  $("#realTimeColor")?.addEventListener("input", (e) => {
+    $("#realTimeClock").style.color = e.target.value;
+  });
+
+  // Clock transparent toggle
+  $("#clockTransparent")?.addEventListener("change", (e) => {
+    const timer = $("#timer");
+    if (e.target.checked) {
+      timer.classList.add("clock-transparent");
+    } else {
+      timer.classList.remove("clock-transparent");
+    }
+  });
+
+  // Focus Mode layout change
+  $("#fullscreenAMode")?.addEventListener("change", () => {
+    updateFocusModeState();
+    const showH = $("#showHours")?.checked ?? false;
+    const showS = $("#showSeconds")?.checked ?? true;
     safeBuildClock();
-    requestAnimationFrame(() => { 
-      positionFlame(); 
-      ensureVisible(); 
-    });
-    
-    // Handle real time mode
-    if ($("#realTimeMode")?.checked) {
-      toggleRealTimeMode();
-    }
-    
-    // Update real time clock color
-    updateRealTimeColor();
-  }
-  
-  function previewLayout(){
-    const sh = $("#showHours")?.checked ?? false;
-    const ss = $("#showSeconds")?.checked ?? true;
-    const uf = $("#useFlip")?.checked ?? true;
-    
-    if(uf){ 
-      flipDigits = buildFlip(timerFlip, sh, ss); 
-      tickFlip(flipDigits, 0, sh, ss); 
-    } else { 
-      renderSimple(0); 
-    }
-    
-    requestAnimationFrame(() => { 
-      positionFlame(); 
-      ensureVisible(); 
-    });
-  }
-  
-  /* ---------- Bindings ---------- */
-  $("#primaryBtn").addEventListener("click", togglePrimary);
-  $("#resetBtn").addEventListener("click", resetCountdown);
-  $("#useFlip").addEventListener("change", () => { 
-    safeBuildClock(); 
-    previewLayout(); 
-  });
-  $("#showHours").addEventListener("change", previewLayout);
-  $("#showSeconds").addEventListener("change", previewLayout);
-  $("#hideCandle").addEventListener("change", () => applyLayoutFlags());
-  $("#centerClock").addEventListener("change", () => applyLayoutFlags());
-  $("#onlyCandle").addEventListener("change", e => { 
-    ensureCandleVisibleWhenOnlyCandle(e.target.checked); 
-    applyLayoutFlags(); 
-  });
-  $("#showTodo").addEventListener("change", () => applyLayoutFlags());
-  $("#realTimeMode").addEventListener("change", () => toggleRealTimeMode());
-  
-  // Gradient and color controls
-  ["bgAngle","bgC1","bgC2","bgC3"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", applyGradient);
+    if (running || paused) {
+      const sec = Math.max(0, Math.floor((endAtMs - performance.now()) / 1000));
+      if (useFlip) {
+        tickFlip(flipDigits, sec, showH, showS);
+      } else {
+        renderSimple(sec);
+      }
     }
   });
   
-  ["clockC1","clockC2","clockC3","textColor","colonColor","simpleColor"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", restyleClockPanels);
+  // Keep colors in Focus Mode toggle
+  $("#keepClockColorsInFocus")?.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      document.body.classList.add("keep-focus-colors");
+    } else {
+      document.body.classList.remove("keep-focus-colors");
+    }
+  });
+
+  // Layout checkboxes listeners
+  $("#hideCandle")?.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      document.body.classList.add("candle-off");
+      const oc = $("#onlyCandle");
+      if (oc?.checked) {
+        oc.checked = false;
+        document.body.classList.remove("only-candle");
+      }
+    } else {
+      document.body.classList.remove("candle-off");
     }
   });
   
-  // Todo color controls
-  $("#todoApply").addEventListener("click", () => { 
-    setTodoBg($("#todoColor").value); 
-    $("#todo-panel").classList.remove("todo-clear"); 
+  $("#centerClock")?.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      document.body.classList.add("center-clock");
+    } else {
+      document.body.classList.remove("center-clock");
+    }
   });
   
-  $("#todoClear").addEventListener("click", () => { 
-    setTodoBg("transparent"); 
-    $("#todo-panel").classList.add("todo-clear"); 
+  $("#onlyCandle")?.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      document.body.classList.add("only-candle");
+      ensureCandleVisibleWhenOnlyCandle(true);
+      const cc = $("#centerClock");
+      if (cc?.checked) {
+        cc.checked = false;
+        document.body.classList.remove("center-clock");
+      }
+    } else {
+      document.body.classList.remove("only-candle");
+    }
   });
   
-  $("#todoGlass").addEventListener("change", (e) => {
-    $("#todo-panel").classList.toggle("todo-glass", e.target.checked);
+  $("#showTodo")?.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      document.body.classList.add("todo-on");
+    } else {
+      document.body.classList.remove("todo-on");
+    }
   });
   
-  /* ---------- Init ---------- */
-  (function boot(){
-    // Apply initial styles
-    applyGradient(); 
-    restyleClockPanels(); 
-    
-    // Apply layout settings
-    if ($("#showTodo")?.checked) document.body.classList.add("todo-on");
-    if ($("#todoGlass")?.checked) $("#todo-panel").classList.add("todo-glass");
-    
-    applyLayoutFlags();
+  // Setup inputs listeners for updates
+  $("#hoursInput")?.addEventListener("change", resetCountdown);
+  $("#minInput")?.addEventListener("change", resetCountdown);
+  $("#secInput")?.addEventListener("change", resetCountdown);
+
+  $("#showHours")?.addEventListener("change", () => {
     safeBuildClock();
-    previewLayout();
-    
-    // Position flame and ensure visibility
-    afterNextPaint(() => { 
-      positionFlame(); 
-      ensureVisible(); 
+    if (running || paused) {
+      if (useFlip) {
+        const sec = Math.max(0, Math.floor((endAtMs - performance.now()) / 1000));
+        tickFlip(flipDigits, sec, $("#showHours")?.checked, $("#showSeconds")?.checked);
+      } else {
+        renderSimple(Math.max(0, Math.floor((endAtMs - performance.now()) / 1000)));
+      }
+    }
+  });
+  $("#showSeconds")?.addEventListener("change", () => {
+    safeBuildClock();
+    if (running || paused) {
+      if (useFlip) {
+        const sec = Math.max(0, Math.floor((endAtMs - performance.now()) / 1000));
+        tickFlip(flipDigits, sec, $("#showHours")?.checked, $("#showSeconds")?.checked);
+      } else {
+        renderSimple(Math.max(0, Math.floor((endAtMs - performance.now()) / 1000)));
+      }
+    }
+  });
+  $("#useFlip")?.addEventListener("change", safeBuildClock);
+
+  $("#primaryBtn")?.addEventListener("click", togglePrimary);
+  $("#resetBtn")?.addEventListener("click", resetCountdown);
+
+  // Background gradient change listeners
+  $("#bgAngle")?.addEventListener("input", applyGradient);
+  $("#bgC1")?.addEventListener("input", applyGradient);
+  $("#bgC2")?.addEventListener("input", applyGradient);
+  $("#bgC3")?.addEventListener("input", applyGradient);
+
+  // To-do base apply
+  $("#todoApply")?.addEventListener("click", () => {
+    const val = $("#todoColor")?.value || "#ffffff";
+    setTodoBg(val);
+    $("#todo-panel")?.classList.remove("todo-clear");
+    $("#todo-panel")?.classList.remove("todo-glass");
+    if ($("#todoGlass")) $("#todoGlass").checked = false;
+  });
+  $("#todoClear")?.addEventListener("click", () => {
+    setTodoBg("transparent");
+    $("#todo-panel")?.classList.add("todo-clear");
+    $("#todo-panel")?.classList.remove("todo-glass");
+    if ($("#todoGlass")) $("#todoGlass").checked = false;
+  });
+  $("#todoGlass")?.addEventListener("change", (e) => {
+    const p = $("#todo-panel");
+    if (p) {
+      if (e.target.checked) {
+        p.classList.add("todo-glass");
+      } else {
+        p.classList.remove("todo-glass");
+      }
+    }
+  });
+
+  // Clock dynamic styling restylers
+  $("#clockC1")?.addEventListener("input", restyleClockPanels);
+  $("#clockC2")?.addEventListener("input", restyleClockPanels);
+  $("#clockC3")?.addEventListener("input", restyleClockPanels);
+  $("#textColor")?.addEventListener("input", restyleClockPanels);
+  $("#colonColor")?.addEventListener("input", restyleClockPanels);
+  $("#simpleColor")?.addEventListener("input", restyleClockPanels);
+
+  // Music Button listeners
+  $("#addMusicBtn")?.addEventListener("click", () => musicFiles?.click());
+  musicFiles?.addEventListener("change", (e) => loadPlaylist(e.target.files));
+  
+  $("#musicPlay")?.addEventListener("click", () => {
+    if (audio.paused) {
+      startPlaylist();
+    } else {
+      pausePlaylist();
+    }
+  });
+  
+  $("#musicPrev")?.addEventListener("click", prevTrack);
+  $("#musicNext")?.addEventListener("click", nextTrack);
+  
+  audio.addEventListener("play", () => {
+    if (musicPlayBtn) musicPlayBtn.textContent = "⏸";
+  });
+  
+  audio.addEventListener("pause", () => {
+    if (musicPlayBtn) musicPlayBtn.textContent = "▶";
+  });
+  
+  audio.addEventListener("ended", () => {
+    if ($("#musicLoop")?.checked) {
+      audio.play().catch((err) => console.warn("Loop playback failed:", err));
+    } else {
+      nextTrack();
+    }
+  });
+
+  // Background Gradient Angle Dial Controls
+  const angleDial = $("#angleDial");
+  const dialNeedle = $("#dialNeedle");
+  const bgAngleInput = $("#bgAngle");
+  
+  function updateDial(deg) {
+    if (dialNeedle) dialNeedle.style.transform = `rotate(${deg}deg)`;
+    if (bgAngleInput) bgAngleInput.value = deg;
+  }
+  
+  function calculateAngle(clientX, clientY) {
+    const rect = angleDial.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = clientX - cx;
+    const dy = clientY - cy;
+    let angle = Math.round(Math.atan2(dy, dx) * (180 / Math.PI)) + 90;
+    if (angle < 0) angle += 360;
+    return angle;
+  }
+  
+  let isDraggingDial = false;
+  
+  function handleDialMove(e) {
+    if (!isDraggingDial) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const deg = calculateAngle(clientX, clientY);
+    updateDial(deg);
+    applyGradient();
+  }
+  
+  angleDial?.addEventListener("mousedown", (e) => {
+    isDraggingDial = true;
+    const deg = calculateAngle(e.clientX, e.clientY);
+    updateDial(deg);
+    applyGradient();
+    document.addEventListener("mousemove", handleDialMove);
+    document.addEventListener("mouseup", handleDialUp);
+  });
+  
+  angleDial?.addEventListener("touchstart", (e) => {
+    isDraggingDial = true;
+    const deg = calculateAngle(e.touches[0].clientX, e.touches[0].clientY);
+    updateDial(deg);
+    applyGradient();
+    document.addEventListener("touchmove", handleDialMove, { passive: false });
+    document.addEventListener("touchend", handleDialUp);
+  });
+  
+  function handleDialUp() {
+    isDraggingDial = false;
+    document.removeEventListener("mousemove", handleDialMove);
+    document.removeEventListener("mouseup", handleDialUp);
+    document.removeEventListener("touchmove", handleDialMove);
+    document.removeEventListener("touchend", handleDialUp);
+  }
+
+  bgAngleInput?.addEventListener("input", (e) => {
+    const deg = parseInt(e.target.value || "0", 10) % 360;
+    if (dialNeedle) dialNeedle.style.transform = `rotate(${deg}deg)`;
+    applyGradient();
+  });
+
+  // Background Solid Color Override
+  $("#bgSolid")?.addEventListener("input", (e) => {
+    const color = e.target.value;
+    const c1 = $("#bgC1");
+    const c2 = $("#bgC2");
+    const c3 = $("#bgC3");
+    if(c1) c1.value = color;
+    if(c2) c2.value = color;
+    if(c3) c3.value = color;
+    applyGradient();
+  });
+
+  // Direct To-Do panel close button
+  $("#closeTodoBtn")?.addEventListener("click", () => {
+    document.body.classList.remove("todo-on");
+    const st = $("#showTodo");
+    if (st) st.checked = false;
+  });
+
+
+  
+  // Sidebar Drawer Toggle Control
+  const menuToggle = $("#menuToggle");
+  const menuCloseBtn = $("#menuCloseBtn");
+  const controlsEl = $("#controls");
+  
+  function openMenu() {
+    controlsEl?.classList.add("open");
+    menuToggle?.classList.add("menu-active");
+    document.body.classList.add("menu-is-open");
+  }
+  
+  function closeMenu() {
+    controlsEl?.classList.remove("open");
+    menuToggle?.classList.remove("menu-active");
+    document.body.classList.remove("menu-is-open");
+  }
+  
+  menuToggle?.addEventListener("click", () => {
+    if (controlsEl?.classList.contains("open")) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+  
+  menuCloseBtn?.addEventListener("click", closeMenu);
+  
+  // Close menu when clicking outside of it (on main container)
+  $("#main")?.addEventListener("click", closeMenu);
+  
+  // Menu Tab Switching
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach((p) => p.classList.remove("active"));
+      
+      btn.classList.add("active");
+      const tabId = btn.dataset.tab;
+      document.getElementById(`tab-${tabId}`)?.classList.add("active");
     });
+  });
+
+  // Intelligent Auto-Centering of Clock Digits based on Font Metrics
+  function autoCenterFont(fontFamily) {
+    try {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      ctx.font = `900 100px ${fontFamily}`;
+      const metrics = ctx.measureText("0");
+      
+      if (!('fontBoundingBoxAscent' in metrics) || !('actualBoundingBoxAscent' in metrics)) {
+        document.documentElement.style.setProperty("--font-pad-top", "0px");
+        document.documentElement.style.setProperty("--font-pad-bottom", "0px");
+        return;
+      }
+      
+      const lineBoxCenter = metrics.fontBoundingBoxAscent - ((metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent) / 2);
+      const visualCenter = metrics.actualBoundingBoxAscent - ((metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent) / 2);
+      
+      const diff = visualCenter - lineBoxCenter; 
+      
+      // Calculate padding ratio relative to digit-h (font-size is 70% of digit-h, flexbox centering needs 2x padding to shift text by diff)
+      const paddingRatio = (Math.abs(diff) / 100) * 2 * 0.70;
+      const paddingValue = `calc(var(--digit-h) * ${paddingRatio})`;
+      
+      if (diff > 0) {
+        document.documentElement.style.setProperty("--font-pad-top", paddingValue);
+        document.documentElement.style.setProperty("--font-pad-bottom", "0px");
+      } else {
+        document.documentElement.style.setProperty("--font-pad-top", "0px");
+        document.documentElement.style.setProperty("--font-pad-bottom", paddingValue);
+      }
+    } catch(e) {
+      console.warn("Auto-centering failed:", e);
+    }
+  }
+
+  // Custom Font File Uploader Logic
+  const fontBtn = $("#fontBtn");
+  const fontFiles = $("#fontFiles");
+  const fontReset = $("#fontReset");
+  const fontNow = $("#fontNow");
+
+  fontBtn?.addEventListener("click", () => fontFiles?.click());
+  
+  fontFiles?.addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (fontNow) fontNow.textContent = `Loading: ${file.name}...`;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const arrayBuffer = evt.target.result;
+      
+      // Load custom font face using raw binary ArrayBuffer (extremely reliable and safe)
+      const fontFace = new FontFace("CustomClockFont", arrayBuffer);
+      
+      fontFace.load().then((loadedFace) => {
+        // Add loaded font face to browser registry
+        document.fonts.add(loadedFace);
+        // Set CSS variable to point to raw font family name
+        document.documentElement.style.setProperty("--clock-font-family", "CustomClockFont");
+        // Trigger smart auto-centering logic
+        autoCenterFont("CustomClockFont, system-ui");
+        // Rebuild timer representation immediately to trigger canvas layout refresh
+        safeBuildClock();
+        
+        if (fontNow) fontNow.textContent = `Active: ${file.name}`;
+      }).catch(err => {
+        console.error("Font loading failed:", err);
+        if (fontNow) fontNow.textContent = "Error: Invalid font file";
+        alert("Failed to load font file. Please upload a valid TTF, OTF, or WOFF font file.");
+      });
+    };
+    reader.onerror = () => {
+      if (fontNow) fontNow.textContent = "Error reading file";
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  fontReset?.addEventListener("click", () => {
+    document.documentElement.style.removeProperty("--clock-font-family");
+    autoCenterFont('"Comic Sans MS", system-ui, -apple-system, sans-serif');
+    if (fontFiles) fontFiles.value = "";
+    if (fontNow) fontNow.textContent = "Default system font active";
+    safeBuildClock(); // Force reconstruct to reset font family
+  });
+  
+  // Initial Run
+  autoCenterFont('"Comic Sans MS", system-ui, -apple-system, sans-serif');
+  applyGradient();
+  restyleClockPanels();
+  safeBuildClock();
+  addEmptyIfNeeded();
+  updateFocusModeState();
+  
+  // Time Spinner Logic
+  function bindSpinner(inputId, minusId, plusId) {
+    const input = document.getElementById(inputId);
+    const minus = document.getElementById(minusId);
+    const plus = document.getElementById(plusId);
+    if(!input || !minus || !plus) return;
     
-    setTimeout(() => { 
-      positionFlame(); 
-      ensureVisible(); 
-    }, 150);
-    
-    setWaxHeightByProgress(1);
-    
-    // Seed one empty to-do item
-    const li = makeTodoItem(""); 
-    $("#todoList").appendChild(li);
-    
-    // Initialize real time clock display
-    updateRealTimeClock();
-    
-    // Ensure primary button is properly labeled
-    primaryBtn.textContent = "Start";
-    
-    // Initialize real time clock color
-    updateRealTimeColor();
-    
-  })();
+    minus.addEventListener("click", () => {
+      let val = parseInt(input.value || "0", 10);
+      if (val > (parseInt(input.min) || 0)) {
+        input.value = val - 1;
+      }
+    });
+    plus.addEventListener("click", () => {
+      let val = parseInt(input.value || "0", 10);
+      const max = parseInt(input.max);
+      if (isNaN(max) || val < max) {
+        input.value = val + 1;
+      }
+    });
+  }
+  bindSpinner("hoursInput", "hMinus", "hPlus");
+  bindSpinner("minInput", "mMinus", "mPlus");
+  bindSpinner("secInput", "sMinus", "sPlus");
+  
+  // Set initial wax height and flame position
+  setWaxHeightByProgress(1);
 </script>
 </body>
 </html>
-<!-- Candle color config (optional, keep anywhere before the script below) -->
-<script id="wax-config" type="application/json">{"wax":"#fcd474"}</script>
-<!-- Auto-apply candle wax color -->
-<script>
-(function(){
-  const root = document.documentElement;
-  function normalizeHex(c){
-    if(typeof c !== 'string') return '';
-    c = c.trim();
-    if(!c) return '';
-    if(c[0] !== '#') c = '#' + c;
-    const m = c.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
-    return m ? c.toLowerCase() : '';
-  }
-  function readConfigTag(){
-    const el = document.getElementById('wax-config');
-    if(!el) return '';
-    try{
-      const obj = JSON.parse(el.textContent || '{}');
-      return normalizeHex(obj.wax || obj.color || '');
-    }catch(e){ return ''; }
-  }
-  function readQuery(){
-    const u = new URL(window.location.href);
-    const v = u.searchParams.get('wax') || '';
-    const h = new URLSearchParams(u.hash.replace(/^#/, '')).get('wax') || '';
-    return normalizeHex(v || h);
-  }
-  function readDataAttr(){
-    return normalizeHex(document.body?.dataset?.wax || '');
-  }
-  function readStored(){
-    return normalizeHex(localStorage.getItem('waxColor') || '');
-  }
-  const color = readQuery() || readConfigTag() || readDataAttr() || readStored() || '#d9c9a3';
-  root.style.setProperty('--wax', color);
-  try{ localStorage.setItem('waxColor', color); }catch(e){}
-  // Optional: auto-wire any color input marked for wax syncing
-  const pickers = document.querySelectorAll('input[type="color"][data-sync="wax"], #waxPicker');
-  pickers.forEach(p => {
-    p.value = color;
-    ['input','change'].forEach(ev => p.addEventListener(ev, e=>{
-      const val = normalizeHex(e.target.value);
-      if(val){
-        root.style.setProperty('--wax', val);
-        try{ localStorage.setItem('waxColor', val);}catch(_e){}
-      }
-    }));
-  });
-})();
-</script>
-<style>
-/* Hotfix: remove the ghost triangle/box above the candle top */
-.waxTop{
-  /* Make the highlight fully fade to transparent at the edges */
-  background:
-    conic-gradient(from 0deg at 50% 50%,
-      rgba(255,255,255,.33) 0deg,
-      rgba(255,255,255,.10) 70deg,
-      rgba(0,0,0,0) 180deg,
-      rgba(255,255,255,0) 300deg,
-      rgba(255,255,255,0) 360deg
-    ),
-    radial-gradient(65% 55% at 50% 62%,
-      rgba(255,255,255,.52) 0%,
-      rgba(255,255,255,.12) 60%,
-      transparent 100%
-    ) !important;
-  /* Clip the layer to an ellipse so no rectangular corners can show */
-  clip-path: ellipse(70% 55% at 50% 62%) !important;
-  /* Extra safety: mask the outside to transparent (supported in modern browsers) */
-  -webkit-mask-image: radial-gradient(75% 60% at 50% 60%, #000 68%, transparent 72%);
-          mask-image: radial-gradient(75% 60% at 50% 60%, #000 68%, transparent 72%);
-}
-/* If you'd rather remove the glossy top entirely, uncomment this: */
-/* .waxTop{ background: none !important; } */
-</style>
-<!-- =================================================================== -->
-<!-- ============== START: EXIT-INTENT DONATION POP-UP CODE ============== -->
-<!-- Copy and paste everything from here... -->
-<!-- 1. The HTML for the Pop-up Box (Initially Hidden) -->
-<div id="donate-modal-overlay">
-  <div id="donate-modal-content">
-    <span id="close-donate-modal" title="Close">&times;</span>
-    <h2>Enjoying this App?</h2>
-    <p>
-      My name is Anabrata, and I am a 16-year-old developer who built this tool.
-      Your support would help me maintain this project and build even bigger and better things in the future.
-    </p>
-    <p>
-      If you find this useful, please consider making a small donation. Every little bit helps!
-    </p>
-    <!-- IMPORTANT: Change the link below to your actual donation page URL -->
-    <a href="https://drive.google.com/file/d/1C4d5bnnoAjjdNLknLfoU_7ahXbKWHOC_/view?usp=drive_link" target="_blank" id="donate-button">
-      Donate Now
-    </a>
-  </div>
-</div>
-<!-- 2. The CSS to Style the Pop-up Box -->
-<style>
-  /* The semi-transparent background overlay */
-  #donate-modal-overlay {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place even when scrolling */
-    z-index: 9999; /* Sit on top of everything else */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Black background with opacity */
-    -webkit-backdrop-filter: blur(5px); /* Optional: blur the background */
-    backdrop-filter: blur(5px);
-    animation: fadeIn 0.3s;
-  }
-  /* The pop-up box itself */
-  #donate-modal-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #2c2c2e; /* Dark background for the box */
-    color: #f2f2f7; /* Light text color */
-    padding: 30px 40px;
-    border: 1px solid #444;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-    text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    animation: slideIn 0.4s ease-out;
-  }
-  #donate-modal-content h2 {
-    margin-top: 0;
-    color: #ffffff;
-    font-size: 24px;
-  }
-  #donate-modal-content p {
-    font-size: 16px;
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-  /* The Close Button (X) */
-  #close-donate-modal {
-    color: #aaa;
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 32px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-  #close-donate-modal:hover {
-    color: #fff;
-  }
-  /* The Donate Button */
-  #donate-button {
-    display: inline-block;
-    background-color: #007aff; /* A nice blue color */
-    color: white;
-    padding: 12px 30px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-  }
-  #donate-button:hover {
-    background-color: #0a84ff; /* A slightly lighter blue on hover */
-  }
-  /* Animations for the pop-up */
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes slideIn {
-    from { top: 40%; opacity: 0; }
-    to { top: 50%; opacity: 1; }
-  }
-</style>
-<!-- 3. The JavaScript to Control the Pop-up -->
-<script>
-  (function() {
-    const modal = document.getElementById('donate-modal-overlay');
-    const closeButton = document.getElementById('close-donate-modal');
-    let hasBeenShown = false; // Flag to ensure it only shows once per page visit
-    
-    // Function to show the modal
-    function showModal() {
-      if (!hasBeenShown) {
-        modal.style.display = 'block';
-        hasBeenShown = true;
-      }
-    }
-    
-    // Function to hide the modal
-    function hideModal() {
-      modal.style.display = 'none';
-    }
-    
-    // --- EVENT LISTENERS ---
-    // Listen for the mouse leaving the document window (the trigger)
-    document.addEventListener('mouseout', function(e) {
-      // e.toElement === null and e.relatedTarget === null means the mouse left the window
-      if (!e.toElement && !e.relatedTarget) {
-        showModal();
-      }
-    });
-    
-    // Hide the modal if the close button (X) is clicked
-    closeButton.addEventListener('click', hideModal);
-    
-    // Hide the modal if the user clicks on the dark overlay background
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        hideModal();
-      }
-    });
-  })(); // We wrap the script in a function to avoid conflicts with your other code
-</script>
-<!-- ...to here, right before your </body> tag -->
-<!-- =============== END: EXIT-INTENT DONATION POP-UP CODE =============== -->
-<!-- ===================================================================== -->
-<script>
-  // Force desktop view on mobile by overriding viewport
-  (function() {
-    var meta = document.querySelector("meta[name=viewport]");
-    if (meta) {
-      meta.setAttribute("content", "width=1024, initial-scale=1.0");
-    } else {
-      meta = document.createElement("meta");
-      meta.name = "viewport";
-      meta.content = "width=1024, initial-scale=1.0";
-      document.head.appendChild(meta);
-    }
-  })();
-</script>
