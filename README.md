@@ -1,7 +1,7 @@
 # Timerz
 
 <p align="center">
-  <img src="https://i.postimg.cc/5H51zgdT/logo.png" alt="App Logo" width="160px">
+  <img src="https://i.postimg.cc/5H51zgdT/logo.png" alt="App Logo" width="120px">
 </p>
 
 Ordinary timer apps productivity ko ek flat text countdown ki tarah treat karte hain jo focus badhane ke bajaye anxiety create karta hai. **Timerz** ek premium focus ecosystem hai jo aapke work aur study blocks ko ek calm, high-productivity ritual me badal deta hai.[cite: 1]
@@ -22,24 +22,19 @@ Yeh pure native JavaScript par built hai. Isme smooth glassmorphic interfaces, r
 
 ---
 
-## 📸 Product Interface Gallery
+## 📸 Interface Showcase
 
-### Core Workspace & Control Drawer
-<p align="center">
-  <img src="https://i.postimg.cc/8sfGBTSm/screen1.png" alt="Main Workspace" width="48%">
-  <img src="https://i.postimg.cc/zb99PRrV/screen2.png" alt="Tactile Control Drawer" width="48%">
-</p>
-
-### Immersive Focus Mode & Theme Engine
-<p align="center">
-  <img src="https://i.postimg.cc/qz8dSQgh/screen3.png" alt="Fullscreen Focus Mode" width="48%">
-  <img src="https://i.postimg.cc/9RvvNqhM/screen4.png" alt="Dynamic Customization Engine" width="48%">
-</p>
-
-### Adaptive Mobile Breakpoint
-<p align="center">
-  <img src="https://i.postimg.cc/v4hwHBW0/screen5.png" alt="Mobile View Layout" width="100%">
-</p>
+<table align="center">
+  <tr>
+    <td width="33.3%"><b>Main Workspace</b><br><img src="https://i.postimg.cc/8sfGBTSm/screen1.png" alt="Main Workspace"></td>
+    <td width="33.3%"><b>Control Drawer</b><br><img src="https://i.postimg.cc/zb99PRrV/screen2.png" alt="Control Drawer"></td>
+    <td width="33.3%"><b>Focus Mode</b><br><img src="https://i.postimg.cc/qz8dSQgh/screen3.png" alt="Focus Mode"></td>
+  </tr>
+  <tr>
+    <td width="33.3%"><b>Theme Engine</b><br><img src="https://i.postimg.cc/9RvvNqhM/screen4.png" alt="Theme Engine"></td>
+    <td width="66.6%" colspan="2"><b>Mobile Breakpoint</b><br><img src="https://i.postimg.cc/v4hwHBW0/screen5.png" alt="Mobile View Layout"></td>
+  </tr>
+</table>
 
 ---
 
