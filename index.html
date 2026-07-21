@@ -446,7 +446,7 @@
   
   .menu-content {
     flex: 1;
-    padding: 24px;
+    padding: 24px 24px 0 24px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -507,6 +507,7 @@
     overflow-y: auto;
     flex: 1;
     padding-right: 6px;
+    padding-bottom: 24px;
   }
   .pane-body::-webkit-scrollbar {
     width: 4px;
@@ -1548,15 +1549,23 @@
           </div>
           
           <div class="settings-section-title" style="margin-top:8px;">Flip Clock Colors</div>
+          
+          <div style="font-size: 10px; margin-bottom: 4px; opacity: 0.8;">Gradient Panels</div>
           <div class="input-grid" style="grid-template-columns: repeat(3, 1fr); gap: 6px;">
             <div><label for="clockC1">Panel 1</label><input id="clockC1" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
             <div><label for="clockC2">Panel 2</label><input id="clockC2" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
             <div><label for="clockC3">Panel 3</label><input id="clockC3" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
           </div>
+          
+          <div style="font-size: 10px; margin-top: 8px; margin-bottom: 4px; opacity: 0.8;">Solid Colors</div>
+          <div class="input-grid" style="grid-template-columns: repeat(3, 1fr); gap: 6px;">
+            <div><label for="clockSolid">Panel Solid</label><input id="clockSolid" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+            <div><label for="textColor">Text Solid</label><input id="textColor" type="color" value="#000000" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+            <div><label for="colonColor">Dot Solid</label><input id="colonColor" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+          </div>
+
           <div class="input-grid" style="grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px;">
-            <div><label for="textColor">Text</label><input id="textColor" type="color" value="#000000" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
-            <div><label for="colonColor">Colon</label><input id="colonColor" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
-            <div><label for="simpleColor">Simple</label><input id="simpleColor" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
+            <div><label for="simpleColor">Simple Clock</label><input id="simpleColor" type="color" value="#ffffff" style="width:100%; height:26px; padding:0; border:none; border-radius:4px; cursor:pointer;"></div>
           </div>
         </div>
       </div>
@@ -1669,6 +1678,13 @@
             <button id="fontReset" class="btn small warn" title="Reset font" style="padding:0 12px; height:32px;">Reset</button>
           </div>
           <span id="fontNow" style="display:block; color:#ffd166; font-size:11px; opacity:.95; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:230px;"></span>
+          
+          <div class="settings-section-title" style="margin-top:12px;">Theme</div>
+          <div class="row" style="gap:8px; align-items:center; width:100%;">
+            <button id="saveThemeBtn" class="btn small alt" style="flex:1;">Save Theme</button>
+            <button id="loadThemeBtn" class="btn small alt" style="flex:1;">Load Theme</button>
+            <input id="themeFileInput" type="file" accept=".json" style="display:none;" />
+          </div>
         </div>
       </div>
     </div>
@@ -2825,6 +2841,18 @@
     applyGradient();
   });
 
+  // Clock Solid Panel Color Override
+  $("#clockSolid")?.addEventListener("input", (e) => {
+    const color = e.target.value;
+    const c1 = $("#clockC1");
+    const c2 = $("#clockC2");
+    const c3 = $("#clockC3");
+    if(c1) c1.value = color;
+    if(c2) c2.value = color;
+    if(c3) c3.value = color;
+    restyleClockPanels();
+  });
+
   // Direct To-Do panel close button
   $("#closeTodoBtn")?.addEventListener("click", () => {
     document.body.classList.remove("todo-on");
@@ -2912,6 +2940,9 @@
   }
 
   // Custom Font File Uploader Logic
+  let customFontDataUrl = "";
+  let customFontName = "";
+
   const fontBtn = $("#fontBtn");
   const fontFiles = $("#fontFiles");
   const fontReset = $("#fontReset");
@@ -2922,6 +2953,15 @@
   fontFiles?.addEventListener("change", (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    customFontName = file.name;
+
+    // Read as Data URL for saving in theme JSON
+    const dataUrlReader = new FileReader();
+    dataUrlReader.onload = function(evt) {
+      customFontDataUrl = evt.target.result;
+    };
+    dataUrlReader.readAsDataURL(file);
 
     if (fontNow) fontNow.textContent = `Loading: ${file.name}...`;
 
@@ -2956,6 +2996,8 @@
   });
 
   fontReset?.addEventListener("click", () => {
+    customFontDataUrl = "";
+    customFontName = "";
     document.documentElement.style.removeProperty("--clock-font-family");
     autoCenterFont('"Comic Sans MS", system-ui, -apple-system, sans-serif');
     if (fontFiles) fontFiles.value = "";
@@ -3108,6 +3150,48 @@
     cpCursor.style.top = `${cy}px`;
   }
   
+  function triggerRealtimeUpdate(inputId, hex) {
+    if (inputId === "bgC1" || inputId === "bgC2" || inputId === "bgC3" || inputId === "bgSolid") {
+      if (inputId === "bgSolid") {
+        ["bgC1", "bgC2", "bgC3"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.value = hex;
+            if (el.nextSibling && el.nextSibling.classList.contains("custom-color-btn")) {
+              el.nextSibling.style.backgroundColor = hex;
+            }
+          }
+        });
+      }
+      applyGradient();
+    } else if (inputId === "clockC1" || inputId === "clockC2" || inputId === "clockC3" || inputId === "clockSolid" || inputId === "textColor" || inputId === "colonColor" || inputId === "simpleColor") {
+      if (inputId === "clockSolid") {
+        ["clockC1", "clockC2", "clockC3"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.value = hex;
+            if (el.nextSibling && el.nextSibling.classList.contains("custom-color-btn")) {
+              el.nextSibling.style.backgroundColor = hex;
+            }
+          }
+        });
+      }
+      restyleClockPanels();
+    } else if (inputId === "realTimeColor") {
+      const rtClock = document.getElementById("realTimeClock");
+      if (rtClock) rtClock.style.color = hex;
+    } else if (inputId === "todoColor") {
+      setTodoBg(hex);
+      const todoPanel = document.getElementById("todo-panel");
+      if (todoPanel) {
+        todoPanel.classList.remove("todo-clear");
+        todoPanel.classList.remove("todo-glass");
+      }
+      const todoGlass = document.getElementById("todoGlass");
+      if (todoGlass) todoGlass.checked = false;
+    }
+  }
+
   function updateCPDisplay() {
     const hex = hslToHex(cpSelectedH, cpSelectedS, cpSelectedL);
     if (cpPreview) cpPreview.style.backgroundColor = hex;
@@ -3119,6 +3203,7 @@
     if (cpActiveInput && cpActiveBtn) {
       cpActiveInput.value = hex;
       cpActiveBtn.style.backgroundColor = hex;
+      triggerRealtimeUpdate(cpActiveInput.id, hex);
       cpActiveInput.dispatchEvent(new Event("input", { bubbles: true }));
     }
   }
@@ -3204,6 +3289,13 @@
     cpSelectedH = hsl.h;
     cpSelectedS = hsl.s;
     cpSelectedL = hsl.l;
+
+    // UX Improvement: If color is pure white (L=100) or pure black (L=0), 
+    // the color wheel interactions are confusing because hue/sat changes don't show.
+    // We snap lightness to 50% so they can immediately see the hue they pick.
+    if (cpSelectedL === 100 || cpSelectedL === 0) {
+      cpSelectedL = 50;
+    }
     
     if (cpSlider) cpSlider.value = cpSelectedL;
     
@@ -3222,6 +3314,7 @@
     if (cpActiveInput && cpActiveBtn && cpInitialHex) {
       cpActiveInput.value = cpInitialHex;
       cpActiveBtn.style.backgroundColor = cpInitialHex;
+      triggerRealtimeUpdate(cpActiveInput.id, cpInitialHex);
       cpActiveInput.dispatchEvent(new Event("input", { bubbles: true }));
       cpActiveInput.dispatchEvent(new Event("change", { bubbles: true }));
     }
@@ -3236,7 +3329,7 @@
       const finalHex = hslToHex(cpSelectedH, cpSelectedS, cpSelectedL);
       cpActiveInput.value = finalHex;
       cpActiveBtn.style.backgroundColor = finalHex;
-      
+      triggerRealtimeUpdate(cpActiveInput.id, finalHex);
       cpActiveInput.dispatchEvent(new Event("input", { bubbles: true }));
       cpActiveInput.dispatchEvent(new Event("change", { bubbles: true }));
     }
@@ -3287,6 +3380,167 @@
     input.addEventListener('input', () => {
       btn.style.backgroundColor = input.value;
     });
+  });
+
+  // Save Theme Logic
+  $("#saveThemeBtn")?.addEventListener("click", () => {
+    const themeData = {
+      bgC1: $("#bgC1")?.value,
+      bgC2: $("#bgC2")?.value,
+      bgC3: $("#bgC3")?.value,
+      bgSolid: $("#bgSolid")?.value,
+      bgAngle: $("#bgAngle")?.value,
+      clockC1: $("#clockC1")?.value,
+      clockC2: $("#clockC2")?.value,
+      clockC3: $("#clockC3")?.value,
+      clockSolid: $("#clockSolid")?.value,
+      textColor: $("#textColor")?.value,
+      colonColor: $("#colonColor")?.value,
+      simpleColor: $("#simpleColor")?.value,
+      todoColor: $("#todoColor")?.value,
+      realTimeColor: $("#realTimeColor")?.value,
+      
+      showHours: $("#showHours")?.checked,
+      showSeconds: $("#showSeconds")?.checked,
+      useFlip: $("#useFlip")?.checked,
+      clockTransparent: $("#clockTransparent")?.checked,
+      keepClockColorsInFocus: $("#keepClockColorsInFocus")?.checked,
+      todoGlass: $("#todoGlass")?.checked,
+      realTimeMode: $("#realTimeMode")?.checked,
+      fullscreenAMode: $("#fullscreenAMode")?.checked,
+      musicLoop: $("#musicLoop")?.checked,
+      hideCandle: $("#hideCandle")?.checked,
+      centerClock: $("#centerClock")?.checked,
+      onlyCandle: $("#onlyCandle")?.checked,
+      showTodo: $("#showTodo")?.checked,
+      
+      customFontDataUrl: customFontDataUrl || "",
+      customFontName: customFontName || ""
+    };
+    
+    const blob = new Blob([JSON.stringify(themeData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "candle-theme.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  
+  // Trigger file uploader on Load click
+  $("#loadThemeBtn")?.addEventListener("click", () => {
+    $("#themeFileInput")?.click();
+  });
+  
+  // Load Theme File Listener
+  $("#themeFileInput")?.addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const data = JSON.parse(evt.target.result);
+        
+        // 1. Set background colors & angle
+        if (data.bgC1) $("#bgC1").value = data.bgC1;
+        if (data.bgC2) $("#bgC2").value = data.bgC2;
+        if (data.bgC3) $("#bgC3").value = data.bgC3;
+        if (data.bgSolid) $("#bgSolid").value = data.bgSolid;
+        if (data.bgAngle) {
+          $("#bgAngle").value = data.bgAngle;
+          updateDial(data.bgAngle);
+        }
+        
+        // 2. Set clock colors
+        if (data.clockC1) $("#clockC1").value = data.clockC1;
+        if (data.clockC2) $("#clockC2").value = data.clockC2;
+        if (data.clockC3) $("#clockC3").value = data.clockC3;
+        if (data.clockSolid && $("#clockSolid")) $("#clockSolid").value = data.clockSolid;
+        if (data.textColor) $("#textColor").value = data.textColor;
+        if (data.colonColor) $("#colonColor").value = data.colonColor;
+        if (data.simpleColor && $("#simpleColor")) $("#simpleColor").value = data.simpleColor;
+        if (data.todoColor) $("#todoColor").value = data.todoColor;
+        if (data.realTimeColor && $("#realTimeColor")) $("#realTimeColor").value = data.realTimeColor;
+        
+        // Sync the custom color button previews
+        document.querySelectorAll('input[type="color"]').forEach(input => {
+          const btn = input.nextSibling;
+          if (btn && btn.classList.contains('custom-color-btn')) {
+            btn.style.backgroundColor = input.value;
+          }
+        });
+        
+        // 3. Set checkboxes and dispatch change events
+        const checkboxes = {
+          showHours: data.showHours,
+          showSeconds: data.showSeconds,
+          useFlip: data.useFlip,
+          clockTransparent: data.clockTransparent,
+          keepClockColorsInFocus: data.keepClockColorsInFocus,
+          todoGlass: data.todoGlass,
+          realTimeMode: data.realTimeMode,
+          fullscreenAMode: data.fullscreenAMode,
+          musicLoop: data.musicLoop,
+          hideCandle: data.hideCandle,
+          centerClock: data.centerClock,
+          onlyCandle: data.onlyCandle,
+          showTodo: data.showTodo
+        };
+        
+        for (const [id, val] of Object.entries(checkboxes)) {
+          const cb = document.getElementById(id);
+          if (cb && val !== undefined) {
+            cb.checked = val;
+            cb.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+        
+        // Redraw gradient background
+        applyGradient();
+        
+        // 4. Custom Font
+        if (data.customFontDataUrl && data.customFontName) {
+          customFontDataUrl = data.customFontDataUrl;
+          customFontName = data.customFontName;
+          const fontNow = $("#fontNow");
+          if (fontNow) fontNow.textContent = `Loading: ${data.customFontName}...`;
+          
+          const fontFace = new FontFace("CustomClockFont", `url(${data.customFontDataUrl})`);
+          fontFace.load().then((loadedFace) => {
+            document.fonts.add(loadedFace);
+            document.documentElement.style.setProperty("--clock-font-family", "CustomClockFont");
+            autoCenterFont("CustomClockFont, system-ui");
+            safeBuildClock();
+            if (fontNow) fontNow.textContent = `Active: ${data.customFontName}`;
+          }).catch(err => {
+            console.error("Loaded theme font failed:", err);
+            if (fontNow) fontNow.textContent = "Error loading font";
+          });
+        } else {
+          // Reset custom font
+          customFontDataUrl = "";
+          customFontName = "";
+          document.documentElement.style.removeProperty("--clock-font-family");
+          autoCenterFont('"Comic Sans MS", system-ui, -apple-system, sans-serif');
+          const fontNow = $("#fontNow");
+          if (fontNow) fontNow.textContent = "Default system font active";
+          safeBuildClock();
+        }
+        
+        // Re-styling panels & build representation
+        restyleClockPanels();
+        safeBuildClock();
+        
+      } catch (err) {
+        alert("Failed to parse theme file. Please make sure it is a valid theme JSON file.");
+        console.error(err);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   });
 </script>
 </body>
