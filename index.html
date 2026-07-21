@@ -1233,6 +1233,177 @@
     border: none;
     box-shadow: 0 0 8px rgba(255, 209, 102, 0.5);
   }
+  /* Custom Color Picker Modal & Buttons */
+  .custom-color-btn {
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  .cp-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .cp-content {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 16px;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .cp-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .cp-title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+  .cp-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.6;
+    padding: 0;
+    line-height: 1;
+  }
+  .cp-close:hover {
+    opacity: 1;
+  }
+  .cp-wheel-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    cursor: crosshair;
+    margin-bottom: 14px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #colorWheel {
+    border-radius: 50%;
+    overflow: hidden !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    display: block;
+  }
+  .cp-cursor {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 2.5px solid #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px rgba(0,0,0,0.6);
+    left: 100px;
+    top: 100px;
+  }
+  .cp-slider-container {
+    width: 100%;
+    margin-bottom: 14px;
+  }
+  .cp-slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+  .cp-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid rgba(0,0,0,0.5);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .cp-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid rgba(0,0,0,0.5);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .cp-preview-row {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .cp-preview {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  }
+  .cp-hex {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 11px;
+    outline: none;
+    text-align: center;
+    font-family: monospace;
+  }
+  .cp-footer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .cp-footer button {
+    flex: 1;
+    height: 30px;
+    padding: 0;
+    font-size: 12px;
+  }
+  /* Center-align pickers inside the input grid blocks */
+  .input-grid > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .input-grid > div > label {
+    margin-bottom: 4px;
+  }
   /* Disable overlapping glass blurs behind menu to completely bypass Chrome rendering bugs */
   body.menu-is-open .clock-transparent .digit,
   body.menu-is-open #todo-panel.todo-glass {
@@ -1475,11 +1646,9 @@
           
           <div class="settings-section-title" style="margin-top:8px;">To-Do Styling</div>
           <div class="row" style="align-items: center; gap: 8px; width:100%;">
-            <div style="flex: 1;">
-              <input id="todoColor" type="color" value="#ffffff" style="width:100%; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
-            </div>
-            <button id="todoApply" class="btn small alt" style="padding: 0 12px; height: 28px;">Apply</button>
-            <button id="todoClear" class="btn small warn" style="padding: 0 12px; height: 28px;">Clear</button>
+            <input id="todoColor" type="color" value="#ffffff" style="width:32px; height:32px; padding:0; border:none; cursor:pointer;">
+            <button id="todoApply" class="btn small alt" style="padding: 0 12px; height: 28px; flex: 1;">Apply</button>
+            <button id="todoClear" class="btn small warn" style="padding: 0 12px; height: 28px; flex: 1;">Clear</button>
           </div>
           <div class="row" style="margin-top: 4px;">
             <label class="switch-row">
@@ -1545,7 +1714,30 @@
     <div class="balloon" style="left:70%; --bcol:#f87171; --dur:10.4s;--drift:10px"></div>
     <div class="balloon" style="left:78%; --bcol:#93c5fd; --dur:8.1s;--drift:-8px"></div>
     <div class="balloon" style="left:86%; --bcol:#f472b6; --dur:9.2s;--drift:14px"></div>
-    <div class="balloon" style="left:94%; --bcol:#06d6a0; --dur:10.6s;--drift:-16px"></div>
+  </div>
+  <!-- Custom Color Picker Modal -->
+  <div id="colorPickerModal" class="cp-modal">
+    <div class="cp-content">
+      <div class="cp-header">
+        <span class="cp-title">Choose Color</span>
+        <button class="cp-close" aria-label="Close color picker">&times;</button>
+      </div>
+      <div class="cp-wheel-container">
+        <canvas id="colorWheel" width="200" height="200"></canvas>
+        <div id="colorWheelCursor" class="cp-cursor"></div>
+      </div>
+      <div class="cp-slider-container">
+        <input type="range" id="colorLightness" min="0" max="100" value="50" class="cp-slider">
+      </div>
+      <div class="cp-preview-row">
+        <div id="cpColorPreview" class="cp-preview"></div>
+        <input type="text" id="cpHexInput" class="cp-hex" maxlength="7">
+      </div>
+      <div class="cp-footer">
+        <button id="cpCancelBtn" class="btn alt small">Cancel</button>
+        <button id="cpSelectBtn" class="btn small">Select</button>
+      </div>
+    </div>
   </div>
 <script>
   const $ = (s) => document.querySelector(s);
@@ -2806,6 +2998,296 @@
   
   // Set initial wax height and flame position
   setWaxHeightByProgress(1);
+  
+  /* ---------- Custom Color Picker System ---------- */
+  let cpActiveInput = null;
+  let cpActiveBtn = null;
+  let cpInitialHex = "";
+  let cpSelectedH = 0;
+  let cpSelectedS = 0;
+  let cpSelectedL = 50;
+  
+  const cpModal = document.getElementById("colorPickerModal");
+  const cpCanvas = document.getElementById("colorWheel");
+  const cpCursor = document.getElementById("colorWheelCursor");
+  const cpSlider = document.getElementById("colorLightness");
+  const cpPreview = document.getElementById("cpColorPreview");
+  const cpHex = document.getElementById("cpHexInput");
+  const cpCancel = document.getElementById("cpCancelBtn");
+  const cpSelect = document.getElementById("cpSelectBtn");
+  const cpClose = cpModal?.querySelector(".cp-close");
+  
+  const cpCtx = cpCanvas?.getContext("2d");
+  const cpRadius = cpCanvas ? cpCanvas.width / 2 : 100;
+  
+  function hslToRgb(h, s, l) {
+    h /= 360; s /= 100; l /= 100;
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+  
+  function hslToHex(h, s, l) {
+    const rgb = hslToRgb(h, s, l);
+    return "#" + rgb.map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+  
+  function hexToHsl(hex) {
+    hex = hex.replace(/^#/, '');
+    let r = parseInt(hex.substring(0, 2), 16) / 255;
+    let g = parseInt(hex.substring(2, 4), 16) / 255;
+    let b = parseInt(hex.substring(4, 6), 16) / 255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) {
+      h = s = 0;
+    } else {
+      let d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return {
+      h: Math.round(h * 360),
+      s: Math.round(s * 100),
+      l: Math.round(l * 100)
+    };
+  }
+  
+  function drawColorWheel() {
+    if (!cpCtx) return;
+    const imgData = cpCtx.createImageData(cpCanvas.width, cpCanvas.height);
+    const data = imgData.data;
+    const w = cpCanvas.width;
+    const h = cpCanvas.height;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const dx = x - cpRadius;
+        const dy = y - cpRadius;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI + 180;
+        const sat = Math.min((dist / cpRadius) * 100, 100);
+        const rgb = hslToRgb(angle, sat, 50);
+        const idx = (y * w + x) * 4;
+        data[idx] = rgb[0];
+        data[idx+1] = rgb[1];
+        data[idx+2] = rgb[2];
+        data[idx+3] = 255;
+      }
+    }
+    cpCtx.putImageData(imgData, 0, 0);
+  }
+  
+  function updateCursor() {
+    if (!cpCursor) return;
+    const angle = (cpSelectedH - 180) * Math.PI / 180;
+    const dist = (cpSelectedS / 100) * cpRadius;
+    const cx = cpRadius + Math.cos(angle) * dist;
+    const cy = cpRadius + Math.sin(angle) * dist;
+    cpCursor.style.left = `${cx}px`;
+    cpCursor.style.top = `${cy}px`;
+  }
+  
+  function updateCPDisplay() {
+    const hex = hslToHex(cpSelectedH, cpSelectedS, cpSelectedL);
+    if (cpPreview) cpPreview.style.backgroundColor = hex;
+    if (cpHex) cpHex.value = hex.toUpperCase();
+    if (cpSlider) {
+      cpSlider.style.background = `linear-gradient(to right, #000000, hsl(${cpSelectedH}, ${cpSelectedS}%, 50%), #ffffff)`;
+    }
+    // Live real-time preview of the color selection
+    if (cpActiveInput && cpActiveBtn) {
+      cpActiveInput.value = hex;
+      cpActiveBtn.style.backgroundColor = hex;
+      cpActiveInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+  
+  function setPickerFromCoordinates(x, y) {
+    if (!cpCanvas) return;
+    const rect = cpCanvas.getBoundingClientRect();
+    const dx = x - rect.left - cpRadius;
+    const dy = y - rect.top - cpRadius;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    
+    const r = Math.min(dist, cpRadius);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI + 180;
+    
+    cpSelectedH = Math.round(angle) % 360;
+    cpSelectedS = Math.round((r / cpRadius) * 100);
+    
+    updateCursor();
+    updateCPDisplay();
+  }
+  
+  let isCPDragging = false;
+  
+  cpCanvas?.addEventListener("mousedown", (e) => {
+    isCPDragging = true;
+    setPickerFromCoordinates(e.clientX, e.clientY);
+  });
+  
+  document.addEventListener("mousemove", (e) => {
+    if (isCPDragging) {
+      setPickerFromCoordinates(e.clientX, e.clientY);
+    }
+  });
+  
+  document.addEventListener("mouseup", () => {
+    isCPDragging = false;
+  });
+  
+  cpCanvas?.addEventListener("touchstart", (e) => {
+    isCPDragging = true;
+    const t = e.touches[0];
+    setPickerFromCoordinates(t.clientX, t.clientY);
+  });
+  
+  document.addEventListener("touchmove", (e) => {
+    if (isCPDragging && e.touches.length > 0) {
+      const t = e.touches[0];
+      setPickerFromCoordinates(t.clientX, t.clientY);
+    }
+  });
+  
+  document.addEventListener("touchend", () => {
+    isCPDragging = false;
+  });
+  
+  cpSlider?.addEventListener("input", (e) => {
+    cpSelectedL = parseInt(e.target.value, 10);
+    updateCPDisplay();
+  });
+  
+  cpHex?.addEventListener("change", (e) => {
+    let val = e.target.value;
+    if (!val.startsWith("#")) val = "#" + val;
+    if (/^#[0-9A-F]{6}$/i.test(val)) {
+      const hsl = hexToHsl(val);
+      cpSelectedH = hsl.h;
+      cpSelectedS = hsl.s;
+      cpSelectedL = hsl.l;
+      if (cpSlider) cpSlider.value = cpSelectedL;
+      updateCursor();
+      updateCPDisplay();
+    }
+  });
+  
+  function openCustomColorPicker(input, btn) {
+    cpActiveInput = input;
+    cpActiveBtn = btn;
+    cpInitialHex = input.value; // Store for revert
+    
+    const initialHex = input.value;
+    const hsl = hexToHsl(initialHex);
+    
+    cpSelectedH = hsl.h;
+    cpSelectedS = hsl.s;
+    cpSelectedL = hsl.l;
+    
+    if (cpSlider) cpSlider.value = cpSelectedL;
+    
+    drawColorWheel();
+    updateCursor();
+    updateCPDisplay();
+    
+    if (cpModal) cpModal.style.display = "flex";
+  }
+  
+  function closeCustomColorPicker() {
+    if (cpModal) cpModal.style.display = "none";
+  }
+  
+  function revertColor() {
+    if (cpActiveInput && cpActiveBtn && cpInitialHex) {
+      cpActiveInput.value = cpInitialHex;
+      cpActiveBtn.style.backgroundColor = cpInitialHex;
+      cpActiveInput.dispatchEvent(new Event("input", { bubbles: true }));
+      cpActiveInput.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    closeCustomColorPicker();
+  }
+  
+  cpCancel?.addEventListener("click", revertColor);
+  cpClose?.addEventListener("click", revertColor);
+  
+  cpSelect?.addEventListener("click", () => {
+    if (cpActiveInput && cpActiveBtn) {
+      const finalHex = hslToHex(cpSelectedH, cpSelectedS, cpSelectedL);
+      cpActiveInput.value = finalHex;
+      cpActiveBtn.style.backgroundColor = finalHex;
+      
+      cpActiveInput.dispatchEvent(new Event("input", { bubbles: true }));
+      cpActiveInput.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    closeCustomColorPicker();
+  });
+  
+  document.querySelectorAll('input[type="color"]').forEach(input => {
+    // Suppress browser native tooltip popups on hover
+    input.removeAttribute('title');
+    
+    const btn = document.createElement('div');
+    btn.className = 'custom-color-btn';
+    btn.style.backgroundColor = input.value;
+    
+    // Force circular dimensions (solid background is 36px, others are 32px)
+    const isSolid = input.id === 'bgSolid';
+    const size = isSolid ? '36px' : '32px';
+    btn.style.width = size;
+    btn.style.height = size;
+    btn.style.cursor = 'pointer';
+    btn.style.borderRadius = '50%';
+    btn.style.border = '2px solid rgba(255, 255, 255, 0.25)';
+    btn.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
+    btn.style.display = 'inline-block';
+    btn.style.verticalAlign = 'middle';
+    btn.style.boxSizing = 'border-box';
+    btn.style.transition = 'border-color 0.2s, box-shadow 0.2s';
+    
+    btn.addEventListener('mouseenter', () => {
+      btn.style.borderColor = 'rgba(255, 255, 255, 0.6)';
+      btn.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5), 0 4px 10px rgba(0,0,0,0.4)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+      btn.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
+    });
+    
+    input.style.setProperty('display', 'none', 'important');
+    input.parentNode.insertBefore(btn, input.nextSibling);
+    
+    btn.addEventListener('click', () => {
+      openCustomColorPicker(input, btn);
+    });
+    
+    input.addEventListener('change', () => {
+      btn.style.backgroundColor = input.value;
+    });
+    input.addEventListener('input', () => {
+      btn.style.backgroundColor = input.value;
+    });
+  });
 </script>
 </body>
 </html>
